@@ -1,0 +1,8 @@
+#!/bin/bash -eux
+
+cd $(dirname $0)/..
+
+. auto/build
+
+echo "deploy to gh-pages branch"
+git push origin gh-pages --force

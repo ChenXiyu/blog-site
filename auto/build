@@ -1,0 +1,43 @@
+#!/bin/bash -eux
+
+PROJECT_ROOT="$(dirname $0)/.."
+cd $PROJECT_ROOT
+
+function cleanup(){
+  echo "clean up"
+  rm -rf public
+  mkdir public
+  prune-worktree
+}
+
+function prune-worktree(){
+  git worktree prune
+  rm -rf .git/worktrees/public/  
+}
+
+function run-inside-public(){
+  cd public && eval "$@" || echo "/n!!! $@ runs failed inside public folder.!!!"
+  cd ..
+}
+
+trap cleanup 0
+
+echo "prepare themes"
+git submodule update --recursive
+
+echo "Checking out gh-pages branch into public"
+git worktree add -B gh-pages public origin/gh-pages
+
+echo "Removing existing files"
+rm -rf public/*
+
+echo "Generating site"
+hugo
+
+echo "commit to gh-pages branch"
+
+run-inside-public git add --all
+
+version=$(TZ=Asia/Shanghai date)
+
+run-inside-public git commit --amend -m \'"Publishing to gh-pages ${version}"\'
