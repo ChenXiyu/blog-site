@@ -1,0 +1,4 @@
+#!/bin/bash -eu
+
+git config --global user.name '94xychen'
+git config --global user.email 'none'

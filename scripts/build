@@ -2,8 +2,9 @@
 
 DEPLOY_BRANCH="${DEPLOY_BRANCH:-gh-pages}"
 
-PROJECT_ROOT="$(dirname $0)/.."
-cd $PROJECT_ROOT
+cd $(dirname $0)/..
+
+. scripts/init-git
 
 function cleanup(){
   echo "clean up"
@@ -18,8 +19,7 @@ function prune-worktree(){
 }
 
 function run-inside-public(){
-  cd public && eval "$@" || echo "/n!!! $@ runs failed inside public folder.!!!"
-  cd ..
+  cd public && eval "$@" && cd ..
 }
 
 trap cleanup 0

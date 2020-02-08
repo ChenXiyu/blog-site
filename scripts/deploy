@@ -1,6 +1,7 @@
 #!/bin/bash -eux
 
 cd $(dirname $0)/..
+. scripts/init-git
 
 export DEPLOY_BRANCH=gh-pages
 
