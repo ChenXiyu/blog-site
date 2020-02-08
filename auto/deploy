@@ -2,7 +2,9 @@
 
 cd $(dirname $0)/..
 
+export DEPLOY_BRANCH=gh-pages
+
 . auto/build
 
-echo "deploy to gh-pages branch"
-git push origin gh-pages --force
+echo "deploy github pages"
+git push origin $DEPLOY_BRANCH --force

@@ -1,5 +1,7 @@
 #!/bin/bash -eux
 
+DEPLOY_BRANCH="${DEPLOY_BRANCH:-gh-pages}"
+
 PROJECT_ROOT="$(dirname $0)/.."
 cd $PROJECT_ROOT
 
@@ -21,12 +23,13 @@ function run-inside-public(){
 }
 
 trap cleanup 0
+cleanup
 
 echo "prepare themes"
 git submodule update --recursive
 
 echo "Checking out gh-pages branch into public"
-git worktree add -B gh-pages public origin/gh-pages
+git worktree add -B $DEPLOY_BRANCH public origin/$DEPLOY_BRANCH
 
 echo "Removing existing files"
 rm -rf public/*
