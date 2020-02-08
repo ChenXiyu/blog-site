@@ -1,4 +1,4 @@
-baseURL: 'https://blog.94xychen.net'
+baseURL: /
 languageCode: en-us
 title: 94xychen
 theme: ezhil
@@ -13,7 +13,7 @@ disqusShortname: ""
 paginate: 10
 params:
   subtitle: >-
-    94xychen tech blog
+    Diging Deeper
   mainSections:
     - posts
   disableDisqusTypes:
@@ -24,8 +24,6 @@ params:
   customCSS: css/custom.css
   customDarkCSS: css/custom-dark.css
   customJS:
-    - js/abc.js
-    - js/xyz.js
     - 'https://code.jquery.com/jquery-3.4.1.js'
   social:
     - name: ChenXiyu
@@ -42,9 +40,9 @@ menu:
     - name: All posts
       url: /posts
       weight: 2
-    - name: About
-      url: /about
-      weight: 3
+    # - name: About
+    #   url: /about
+    #   weight: 3
     - name: Tags
       url: /tags
       weight: 4
