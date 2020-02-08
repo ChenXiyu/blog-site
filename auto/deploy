@@ -1,10 +1,5 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 
 cd $(dirname $0)/..
 
-export DEPLOY_BRANCH=gh-pages
-
-. auto/build
-
-echo "deploy github pages"
-git push origin $DEPLOY_BRANCH --force
+auto/dev-environment scripts/deploy

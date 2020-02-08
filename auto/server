@@ -2,4 +2,4 @@
 
 cd $(dirname $0)/..
 
-hugo server -D
+auto/dev-environment hugo server -D

@@ -8,5 +8,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the site
-      run: |
-        docker-compose --version
+      run: auto/build

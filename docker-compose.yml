@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  dev:
+    build:
+      dockerfile: support/dev/Dockerfile
+      context: .
+    working_dir: /work
+    volumes: 
+    - .:/work
