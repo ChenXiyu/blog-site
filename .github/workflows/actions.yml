@@ -1,13 +1,12 @@
-name: github site CI
+name: build github Pages
 
 on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Build the site
-      run: auto/build
+      run: |
+        docker-compose --version
