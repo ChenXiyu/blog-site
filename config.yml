@@ -1,0 +1,53 @@
+baseURL: 'https://blog.94xychen.net'
+languageCode: en-us
+title: 94xychen
+theme: ezhil
+
+# themes configurations
+copyright: © Copyright 94xychen
+pygmentsstyle: solarized-dark
+pygmentscodefences: true
+pygmentscodefencesguesssyntax: true
+googleAnalytics: ""
+disqusShortname: ""
+paginate: 10
+params:
+  subtitle: >-
+    94xychen tech blog
+  mainSections:
+    - posts
+  disableDisqusTypes:
+    - page
+  featherIconsCDN: true
+  favicon: icons/favicon.png
+  mode: dark
+  customCSS: css/custom.css
+  customDarkCSS: css/custom-dark.css
+  customJS:
+    - js/abc.js
+    - js/xyz.js
+    - 'https://code.jquery.com/jquery-3.4.1.js'
+  social:
+    - name: ChenXiyu
+      icon: github
+      url: 'https://github.com/ChenXiyu'
+    # - name: Twitter
+    #   icon: twitter
+    #   url: 'https://twitter.com/gohugoio'
+menu:
+  main:
+    - name: Home
+      url: /
+      weight: 1
+    - name: All posts
+      url: /posts
+      weight: 2
+    - name: About
+      url: /about
+      weight: 3
+    - name: Tags
+      url: /tags
+      weight: 4
+taxonomies:
+  tag: tags
+  category: categories
