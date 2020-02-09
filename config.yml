@@ -13,7 +13,7 @@ disqusShortname: ""
 paginate: 10
 params:
   subtitle: >-
-    Diging Deeper
+    Digging Deeper
   mainSections:
     - posts
   disableDisqusTypes:
