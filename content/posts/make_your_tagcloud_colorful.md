@@ -13,6 +13,7 @@ categories:
 
 ---
 今天无意间看到hexo文档中的[tagcloud文档](https://hexo.io/zh-cn/docs/helpers.html#tagcloud),它说tagcloud是支持彩色的，但是我没有学过这些前端的东西啊，不过我可以试着改一改。我现在使用的主题是[jacman](https://github.com/ChenXiyu/jacman),这个主题比较简单，我自己做了些调整，包括今天要介绍的colorful tagcloud。:-）
+<!--more-->
 标签云是我这个主题就带有的，但是这个主题的标签云只有灰黑色，比较单调，而hexo的文档中看到tagcloud是支持彩色的，于是我开始对主题进行了改造：
 <!--more-->
 找到主题中标签云的文件`$ find themes/jacman/ | grep tagcloud`

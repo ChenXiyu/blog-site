@@ -8,8 +8,8 @@ tags:
 categories:
 - Ruby
 ---
-
 在这一系列的第二部分中，我们将会讨论一些更加高级的并发模型，比如：Actors，Communicating Sequential Processes, Software Transactional Memory 和 Guilds（有可能在Ruby3中会被实现的一种新的并发模型）。
+<!--more-->
 如果你还没有读过我们这一系列文章的[第一部分](https://chenxiyu.github.io/2017/09/06/Introduction_to_Concurrency_Models_with_Ruby_Part_I/)，那我强烈推荐你先去读一下第一篇，我们在第一篇讨论了进程，线程，GIL，EventMachine和我们在第二部分同样会提到的Fibers。
 <!--more-->
 ![](/images/Introduction_to_Concurrency_Models_with_Ruby_Part_II/1.jpeg)

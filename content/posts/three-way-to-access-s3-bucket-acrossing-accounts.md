@@ -6,6 +6,7 @@ tags: [AWS, S3, Permissions]
 categories: [AWS SAP]
 ---
 在这篇文章中, 我们整理一下跨Account 授权S3 访问的三种方式. 他们分别是, Bucket policy, Cross Account role 和 S3 ACL.
+<!--more-->
 前两种其实前面讲过的Resource based policy 和 Identity based policy, 也是跨Account授权访问其他种类resource可以用到的通用方法, 最后一种S3 ACL 是S3特殊的一种授权方式, 在前两种能够达成目的的情况下, AWS 推荐使用前两种方式, S3 ACL已经被AWS标记成了老旧的方式(legacy way), 但是, 如果你已经使用了ACL 并且它工作良好, 那你也没有必要花精力将它改到Bucket policy上来. 那么接下来我们就一起看一下这三种授权方式的异同吧. 
 
 ## **S3 ACLs**

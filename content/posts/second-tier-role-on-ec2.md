@@ -8,7 +8,7 @@ categories: [AWS SAP]
 EC2 可以区分Execution role 和Task role嘛?
 Officially, NO. But…
 当然会有But, 对吧, 不然这篇文章要干嘛…
-
+<!--more-->
 最近在项目上做了一个比较有意思的实验, 那就是在EC2的机器上实现2层Role 的机制: EC2机器用一个role, EC2上跑的容器用另外的一个role, 熟悉的朋友可能就会想, 那我在容器里面assume role不就好了吗? 其实这是一种解决方案, 但是这种方式有一些缺陷, 而我们实现了一种通过fake metadata service来实现的更加完善的方案. 且听我慢慢道来.
 
 ## 为什么会有这样的需求?

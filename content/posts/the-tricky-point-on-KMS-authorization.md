@@ -4,6 +4,7 @@ date: 2020-02-09T14:00:50+08:00
 draft: false
 categories: [AWS SAP]
 ---
+<!--more-->
 前面两篇文章中介绍了AWS 中的授权模式, 大概概括下来就是:
   * 能够真正提供授权只有Identity Based policy 和 Resource-based policy.
   * Org SCPs、Permission boundary、session policy 都是用于限定范围的, 不能真正的授权操作.

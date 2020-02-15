@@ -6,6 +6,7 @@ tags: [systemd]
 ---
 
 以前都是使用supervisor来启动需要自动启动的进程,比如说:shadowsocks,minecraft的服务器端等等.以前在使用Archlinux的时候shadowsocks的进程是做成一个systemd的daemon的,今天在和赵睿大神交谈后提到了这个问题,于是开始在[ArchWiki](wiki.archlinux.org)中学习将一个进程做成Daemon的方法,记录如下:
+<!--more-->
 ## 步骤介绍
 1. 在`/usr/lib/systemd/system`或者`/etc/systemd/system`(经依云指正,推荐个人用户将systemd的配置文件放在/etc/systemd下)目录下写入该Daemon的配置文件,
 2. 运行`systemctl daemon-reload`让systemd重新加载daemon配置文件

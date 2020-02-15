@@ -16,7 +16,7 @@ categories:
 - 什么时候使用哪一种模型;
 - 哪些开源项目在使用它们;
 - 它们的优缺点分别是什么;
-
+<!--more-->
 ![](/images/Introduction_to_Concurrency_Models_with_Ruby_Part_I/1.jpeg)
 # 进程( Processes)
   跑多个进程准确的说并不是并发( concurrency ), 而是并行( parallelism ). 尽管并发和并行经常被搞混,但是他们是不一样的东西,下面是一个简单的类比:
