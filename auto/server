@@ -2,4 +2,4 @@
 
 cd $(dirname $0)/..
 
-auto/dev-environment hugo server -D
+auto/dev-environment "hugo server -D --bind 0.0.0.0"
