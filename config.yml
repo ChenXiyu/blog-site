@@ -8,7 +8,7 @@ copyright: © Copyright 94xychen
 pygmentsstyle: solarized-dark
 pygmentscodefences: true
 pygmentscodefencesguesssyntax: true
-googleAnalytics: ""
+googleAnalytics: "UA-158590129-1"
 disqusShortname: ""
 paginate: 10
 params:
@@ -21,10 +21,10 @@ params:
   featherIconsCDN: true
   favicon: icons/favicon.png
   mode: dark
-  customCSS: css/custom.css
-  customDarkCSS: css/custom-dark.css
-  customJS:
-    - 'https://code.jquery.com/jquery-3.4.1.js'
+  # customCSS: css/custom.css
+  # customDarkCSS: css/custom-dark.css
+  # customJS:
+    # - 'https://code.jquery.com/jquery-3.4.1.js'
   social:
     - name: ChenXiyu
       icon: github
