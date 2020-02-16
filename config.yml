@@ -9,7 +9,7 @@ pygmentsstyle: solarized-dark
 pygmentscodefences: true
 pygmentscodefencesguesssyntax: true
 googleAnalytics: "UA-158590129-1"
-disqusShortname: ""
+disqusShortname: "chenxiyu"
 paginate: 10
 params:
   subtitle: >-
