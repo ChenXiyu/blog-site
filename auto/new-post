@@ -1,0 +1,6 @@
+#!/bin/bash -eu
+cd $(dirname $0)/..
+: ${1?post name required}
+
+auto/dev-environment "hugo new posts/$1.md"
+mkdir -p "static/images/$1"
