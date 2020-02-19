@@ -10,6 +10,7 @@ pygmentscodefences: true
 pygmentscodefencesguesssyntax: true
 googleAnalytics: "UA-158590129-1"
 disqusShortname: "chenxiyu"
+summaryLength: 3
 paginate: 10
 params:
   subtitle: >-

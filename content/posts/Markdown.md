@@ -5,7 +5,7 @@ draft: true
 tags: [Markdown]
 ---
 整理一下Markdown的语法.
-<!--more-->
+ 
 ## **[Markdown介绍](https://zh.wikipedia.org/wiki/Markdown)**
 **Markdown**是一种轻量级标记语言,它允许人们“使用易读易写的纯文本格式编写文档，然后转换成有效的XHTML(或者HTML)文档”。
 它避免了我直接写html文档。这是我很喜欢的，而且hexo的markdown解释其生成的html其显示效果还是很不错的。

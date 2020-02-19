@@ -8,7 +8,7 @@ tags:
 ---
 
 编译完jpeglib和jp2a 运行jp2a 提示`error:while loading shared libraries:jpeglib.so.9 no such file or directory`,jpeglib是刚刚编译好的。
-<!--more-->
+ 
 ``` 
 $updatedb
 $locate jpeglib.so.9

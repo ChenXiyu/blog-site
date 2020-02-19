@@ -9,11 +9,11 @@ categories:
 - emacs
 ---
 OK, 既然说是无痛，那么我先解释一下我关于使用‘传统’方式打开emacs的痛点：
-<!--more-->
+ 
 - 启动慢（虽然不是很慢而我也并没有经常重启），其实启动慢主要体现在，我在GUI中使用emacs编辑文件，在terminal下想做一次git commit类似的操作，有时这个操作需要打开一个默认的编辑器，而我设置的这个编辑器就是emacs，传统做法上就是直接打开一个emacs的进程，这个进程会重新读取配置文件，加载一份新的进程
 - 在GUI里面打开的文件，在terminal中不能编辑
 
-使用emacs daemon 就能解决上述痛点，只有一个emacs daemon进程，buffer在不同的emacs client将是可以共享的，而terminal上的默认编辑器设置为emacs client的话，每次打开消耗的时间就只有一个连接emacs daemon的时间，几乎是秒开。<!--more-->
+使用emacs daemon 就能解决上述痛点，只有一个emacs daemon进程，buffer在不同的emacs client将是可以共享的，而terminal上的默认编辑器设置为emacs client的话，每次打开消耗的时间就只有一个连接emacs daemon的时间，几乎是秒开。 
 本笔记记录一种在MacOs下使用Emacs daemon mode的方式，该方案会在第一次试图打开emacs的时候启动emacs daemon，然后开始运行emacs client，如果emacs daemon在运行，就会直接打开emacs client。
 当然啦，emacs daemon的打开方式也可以是在开机的时候就启动，个人认为这样有一个缺点：拖慢开机速度，但是，对于我来说区别不大，我的Mac不是频繁的重启，但是我还是选择在第一次试图使用emacs的时候再启动。
 以daemon模式启动emacs是很简单的，在任何命令行环境使用如下命令便可启动emacs daemon

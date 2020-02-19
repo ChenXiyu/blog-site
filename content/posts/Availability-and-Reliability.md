@@ -6,7 +6,7 @@ categories: [AWS SAP]
 ---
 
 上篇文章我们理清楚了Durability 和 Availability的含义, 但是我们也经常听说Reliability 这个词, 很多同学在Reliability 和Availability 之间又有点模模糊糊的, 粗一理解上去, Reliability 和 Availability 好像是一个意思啊? 那么接下来, 我们就来看看Availability 和 Reliability 有什么异同.
-<!--more-->
+ 
 在上篇文章中, 我们知道了Availability 是指一个系统在一个时间段中, 有多长时间是可用的. 它的计算公式如下所示:
 
 可用性 = (总运行时间 - 总宕机时间) / 总运行时间

@@ -6,7 +6,7 @@ categories: [AWS SAP]
 ---
 
 作为第一语言非英语的学习者, 在接触云相关的服务/概念的时候, 可能经常被一些概念搞的云里雾里, 比如Authentication/Authorization、governance/compliance/auditing、 Durability/Availability 等等. 
-<!--more-->
+ 
 如果能尽早的弄清楚这些概念, 我们也能更好的理解云服务和更好的利用相关数据来帮助我们演进我们的架构.
 
 今天我们就来理清楚一下Durability、Availability的含义:

@@ -8,10 +8,10 @@ categories:
 - Tech
 ---
 记录一下今天安装source code pro 字体的过程
-<!--more-->
+ 
 ## 字体欣赏
 ![](/images/install_fonts.png)
-<!--more-->
+ 
 ## source code pro 介绍
 source code pro 是一款开源的等宽字体，非常适合写代码,个人认为非常漂亮，可惜中文支持的并不好看，但是在终端里面就没有几个中文，所以设置成终端字体是非常棒的。[source code pro github repos](https://github.com/adobe-fonts/source-code-pro)
 ## 下载

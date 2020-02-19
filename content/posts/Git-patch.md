@@ -6,7 +6,7 @@ date: 2015-11-10 12:17:44
 draft: false
 ---
 git除了使用push/pull来在不同仓库将传输变更外还提供了一种比较‘古老’的方式来传输变更，那就是补丁.补丁通过邮件发送，如果是公司内网，禁掉了git原生协议/ssh端口/http协议的话，我们没法push或者pull变更，那么现在将补丁通过邮件发送是一个不错的选择。git 实现了三条特定的命令来帮助交换补丁：
-<!--more-->
+ 
 * git format-patch 用于生成email形式的补丁;
 * git send-email 通过SMTP来发送一个git补丁;
 * git am 应用邮件消息中的补丁;
