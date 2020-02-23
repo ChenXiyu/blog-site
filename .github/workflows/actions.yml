@@ -6,15 +6,8 @@ on:
       - master
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: test build
-      run: auto/build
   deploy:
     runs-on: ubuntu-latest
-    if: success()
     steps:
     - uses: actions/checkout@v2
     - name: deploy
