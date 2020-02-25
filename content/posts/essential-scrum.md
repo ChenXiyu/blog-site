@@ -2,8 +2,10 @@
 title: scrum 精髓
 date: 2018-11-27 20:02:03
 draft: true
-tags: Scrum
-categories: Methodology
+tags:
+- Scrum
+categories:
+- Methodology
 ---
 参加了ThoughtWorks在公司内部举办的敏捷教练培训，推荐的入门读物是《scrum 精髓：敏捷转型指南》，本博文会记录读书过程结合培训课程的笔记和想法、感受。博文也会随着读书/学习进度的推进更新、修订
  

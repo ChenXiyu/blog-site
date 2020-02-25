@@ -1,55 +1,38 @@
 baseURL: /
-languageCode: en-us
-title: 94xychen
-theme: ezhil
-
-# themes configurations
-copyright: © Copyright 94xychen
-pygmentsstyle: solarized-dark
-pygmentscodefences: true
-pygmentscodefencesguesssyntax: true
+title: 94xychen's Blog
+theme: hugo-notepadium
+copyright: ©2019 94xychen.
 googleAnalytics: "UA-158590129-1"
 disqusShortname: "chenxiyu"
-summaryLength: 3
-paginate: 10
+hasCJKLanguage: true
+enableRobotsTXT: true
+markup:
+  highlight:
+    codeFences: true
+    noClasses: false
+  goldmark:
+    renderer:
+      unsafe: true
 params:
-  subtitle: >-
-    Digging Deeper
-  mainSections:
-    - posts
-  disableDisqusTypes:
-    - page
-  featherIconsCDN: true
-  favicon: icons/favicon.png
-  mode: dark
-  # customCSS: css/custom.css
-  # customDarkCSS: css/custom-dark.css
-  # customJS:
-    # - 'https://code.jquery.com/jquery-3.4.1.js'
-  social:
-    - name: ChenXiyu
-      icon: github
-      url: 'https://github.com/ChenXiyu'
-    # - name: Twitter
-    #   icon: twitter
-    #   url: 'https://twitter.com/gohugoio'
-menu:
-  main:
-    - name: Home
-      url: /
-      weight: 100
-    - name: All posts
-      url: /posts
-      weight: 200
-    # - name: About
-    #   url: /about
-    #   weight: 3
-    - name: Tags
-      url: /tags
-      weight: 400
-    - name: Categories
-      url: /categories
-      weight: 500
-taxonomies:
-  tag: tags
-  category: categories
+  style: auto
+  dateFormat: 'Monday, January 2, 2006'
+  logo: images/logo.png
+  slogan: Digging Deeper
+  license: ''
+  comments:
+    enable: true
+  math:
+    enable: enable
+    use: katex
+  syntax:
+    use: none
+    theme: xcode
+    darkTheme: xcode-dark
+  nav:
+    showCategories: false
+    showTags: false
+    custom:
+      - title: Github
+        url: https://github.com/chenxiyu
+      # - title: Hugo
+      #   url: 'https://gohugo.io/'
