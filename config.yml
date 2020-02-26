@@ -34,5 +34,3 @@ params:
     custom:
       - title: Github
         url: https://github.com/chenxiyu
-      # - title: Hugo
-      #   url: 'https://gohugo.io/'
