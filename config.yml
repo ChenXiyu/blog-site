@@ -28,6 +28,9 @@ params:
     use: none
     theme: xcode
     darkTheme: xcode-dark
+  share:
+    enable: false
+    addThisId: ""
   nav:
     showCategories: false
     showTags: false
