@@ -9,9 +9,9 @@ categories:
 - Ruby
 ---
 在这一系列的第二部分中，我们将会讨论一些更加高级的并发模型，比如：Actors，Communicating Sequential Processes, Software Transactional Memory 和 Guilds（有可能在Ruby3中会被实现的一种新的并发模型）。
- 
-如果你还没有读过我们这一系列文章的[第一部分](https://chenxiyu.github.io/2017/09/06/Introduction_to_Concurrency_Models_with_Ruby_Part_I/)，那我强烈推荐你先去读一下第一篇，我们在第一篇讨论了进程，线程，GIL，EventMachine和我们在第二部分同样会提到的Fibers。
- 
+
+如果你还没有读过我们这一系列文章的[第一部分](/posts/introduction_to_concurrency_models_with_ruby_part_i/)，那我强烈推荐你先去读一下第一篇，我们在第一篇讨论了进程，线程，GIL，EventMachine和我们在第二部分同样会提到的Fibers。
+
 ![](/images/Introduction_to_Concurrency_Models_with_Ruby_Part_II/1.jpeg)
 # Actors
 Actors 是一种并发原语，它们可以相互之间发送消息。创建一个Actor并且定义它怎么去响应接下来会接受到的消息。它们各自拥有自己私有的状态，并且状态不可共享。所以它们只能通过发送消息来相互交互。由于没有共享的状态，那么在这里锁也没有存在的必要了。
@@ -138,7 +138,7 @@ Account1: 90, Account2: 110
 
 ## 开源实例
   - [concurrent-ruby](https://github.com/ruby-concurrency/concurrent-ruby)中的TVar，实现了STM，同时还包含了一些用于比较在MRI、JRuby、Rubinius中使用锁和使用STM的性能测试工具。
-  
+
 # Guilds
 Guilds是被Koichi Sasada（Ruby核心开发者，设计了Ruby VM、fiber、GC）提议加入Ruby3的一种新的并发模型。一下有几点对Guilds想法：
   - 新的模型需要与Ruby2兼容，并且能够提供更好的并发。
