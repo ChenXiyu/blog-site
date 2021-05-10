@@ -63,7 +63,7 @@ CSP是一种非常类似于Actor的实现，它同样是基于‘不通过共享
   - 进程在CSP中是匿名的存在，在Actor中是有标识的。所以CSP使用特定的频道来收发消息，而Actor中是直接收发消息。
   - 在CSP中，如果接受者还没有做好接收消息的准备，那么发送者是不能发送消息的，而在Actor中，Actors可以异步的发送消息（在Celluloid中使用[async calls](https://github.com/celluloid/celluloid/wiki/Basic-usage)）。
 
-CSP在不同语言中通过不同的方式实现：Golang通过[goroutines 和 channels](https://blog.golang.org/share-memory-by-communicating) 实现了CSP，Clojure通过[core.async](http://clojure.com/blog/2013/06/28/clojure-core-async-channels.html)库实现CSP，Crystal通过[fibers 和 channels](https://crystal-lang.org/docs/guides/concurrency.html)实现CSP。在Ruby中，有很多gem实现了CSP。比如一个叫做[concurrency-ruby](https://github.com/ruby-concurrency/concurrent-ruby/blob/df482db36caf1b0c1d69a8ff97a2407469e1e315/doc/channel.md)的库实现的一个叫做 `Channel` 的类。
+CSP在不同语言中通过不同的方式实现：Golang通过[goroutines 和 channels](https://blog.golang.org/share-memory-by-communicating) 实现了CSP，Clojure通过core.async库实现CSP，Crystal通过[fibers 和 channels](https://crystal-lang.org/docs/guides/concurrency.html)实现CSP。在Ruby中，有很多gem实现了CSP。比如一个叫做[concurrency-ruby](https://github.com/ruby-concurrency/concurrent-ruby/blob/df482db36caf1b0c1d69a8ff97a2407469e1e315/doc/channel.md)的库实现的一个叫做 `Channel` 的类。
 ```Ruby
 # csp.rb
 require 'concurrent-edge'
@@ -111,7 +111,7 @@ Go 1 thread: 70168386894880
   - 一个事务内如果发生错误，那么这个事务将被整体的中断并且回滚到事务开始前的状态。
   - 如果一个事务因为冲突而没有办法提交成功，那么这个事务会一直重试，直到成功。
 
-[concurrent-ruby](https://github.com/ruby-concurrency/concurrent-ruby)基于Clojure的[Refs](https://clojure.org/reference/refs)实现了[TVar](https://ruby-concurrency.github.io/concurrent-ruby/Concurrent/TVar.html)，下面有从一个银行转钱到另一个银行的例子：
+[concurrent-ruby](https://github.com/ruby-concurrency/concurrent-ruby)基于Clojure的[Refs](https://clojure.org/reference/refs)实现了TVar，下面有从一个银行转钱到另一个银行的例子：
 ```Ruby
 # stm.rb
 require 'concurrent'
@@ -178,7 +178,7 @@ puts channel.receive
   - 从资源使用的角度看，虽然说在一个进程中跑多个Guild要比直接开多个进程要轻量，但是与Ruby线程相比，它还是不那么轻量，你可能不会仅仅使用Guild去处理上万个WebSocket的连接。
 
 ## 开源实例
- 由于Ruby3并没有发布，所以现在并没有开源实例。但是我很看好未来马上会有开发者投入到一些Guild友好的工具的开发中，类似于Web 服务器、后台处理进程这种。大多数这种工具可能都会允许使用混合并发方式来编程：像跑多个进程，每一个进程中跑多个Guild，每一个Guild跑多个线程。现在来说，你可以先读读Koichi Sasada的[原始提议](http://www.atdot.net/~ko1/activities/2016_rubykaigi.pdf)
+ 由于Ruby3并没有发布，所以现在并没有开源实例。但是我很看好未来马上会有开发者投入到一些Guild友好的工具的开发中，类似于Web 服务器、后台处理进程这种。大多数这种工具可能都会允许使用混合并发方式来编程：像跑多个进程，每一个进程中跑多个Guild，每一个Guild跑多个线程。现在来说，你可以先读读Koichi Sasada的原始提议.
 # 总结
   还是那句话，并发问题没有银弹。我们文章中提到的并发模型都有各自的利弊，CSP模型在单一系统的情况下运行的最好并且没有死锁，Actor模型在使用多台机器的系统中伸缩性最好，STM使得并发编程更加简单。但是以上提到的这些模型都不是Ruby中的原生实现，也不能完全适配其他的编程语言。因为在Ruby中它们都是基于Ruby的原生并发原语实现的，要不就是线程，要不就是Fiber。不管怎么样，Guilds有可能在Ruby3中发布，这算是在实现更好的并发上先前走了一大步。
   原文地址: https://engineering.universe.com/introduction-to-concurrency-models-with-ruby-part-ii-c39c7e612bed.
