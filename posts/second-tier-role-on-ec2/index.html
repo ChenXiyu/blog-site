@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>在EC2 上实现宿主与应用容器权限的分离(2 tiers role) &nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="在EC2 上实现宿主与应用容器权限的分离(2 tiers role) " /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">在EC2 上实现宿主与应用容器权限的分离(2 tiers role) </h1><p class="article date">Sunday, February 9, 2020</p></section><article class="article markdown-body"><p>EC2 可以区分Execution role 和Task role嘛?
+Officially, NO. But…
+当然会有But, 对吧, 不然这篇文章要干嘛…</p>
+<p>最近在项目上做了一个比较有意思的实验, 那就是在EC2的机器上实现2层Role 的机制: EC2机器用一个role, EC2上跑的容器用另外的一个role, 熟悉的朋友可能就会想, 那我在容器里面assume role不就好了吗? 其实这是一种解决方案, 但是这种方式有一些缺陷, 而我们实现了一种通过fake metadata service来实现的更加完善的方案. 且听我慢慢道来.</p>
+<h2 id="为什么会有这样的需求">为什么会有这样的需求?</h2>
+<p>我们项目在开发/维护一个跨account创建CI agent的平台, Ci的agent 以容器的形式跑在EC2 instance 上, 我们会给EC2 Instance赋予一个Role 以使CI agent有一定的权限完成特定的任务, 而这些权限分成两个部分:</p>
+<ul>
+<li>机器正常运行需要的一些权限, 比如LogGroup的权限等</li>
+<li>跑job真正要用到的权限(由创建Agent的用户根据他们的目的定义)</li>
+</ul>
+<p>在之前, 我们将这两部分权限揉到一个role里面, 而在我们以前的设计中, 我们允许用户提供这个role(通过直接指定定role arn. 这个role 包含上述两部分权限. 由于某些授权需要构建role与资源之间的信任关系, 而这个信任关系会在role 重建的过程中被破坏掉, 在这种情况下应该尽量避免相关role的重建. 所以我们提供一种选择让用户提供一个完整的role来避免role 随着agent stack的重建而重建), 用户提供的role中就必须加上我们instance运行所必须的权限, 这就会导致如果agent更新时需要新的权限, 而用户又没有及时加上必要的权限, 就会导致agent 所在的instances起不起来.</p>
+<p>我们就想用类似ECS 的那种两层role 架构来解决这个问题: execution role 和task role, Execution role 拥有容器平台需要的权限, 而task role包含容器真正会用到的权限. 这样, 用户提供的就仅仅是一个task role, 而我们自己控制execution role, 而这样也比较符合least privilege 原则.</p>
+<h2 id="为什么在container里面assume-role不是一个好的实现">为什么在container里面assume role不是一个好的实现</h2>
+<p>现在我们可以解释一下为什么在container 里面assume role 不是一个好的实现: 在container 里面Assume role 这种实现本质就是将我们assume 到的role的credentials 放到环境变量中, 依赖AWS 官方工具读取credential 的优先级, 它会先读取环境变量中credential. 正常情况下, 我们只要将assume role 拿到的credential放在环境变量中就能被读取到.
+但是我们的agent采用docker in docker 的机制, 在container 里面跑的job 也是可以跑docker 的. 如果用户在跑job的时候没有明确的将相对应的环境变量映射到job 的container 里面去的话, 它将拿不到环境变量中的credentials, 最终他会去metadata service上去取当前机器的credential, 这样, 它就拿到了一个错误的权限.</p>
+<h2 id="那如何做更好呢">那如何做更好呢?</h2>
+<p>既然最后一步都是尝试访问metadata service 去拿credentials, 那我们能不能拦截这个请求呢?
+基于这个思路, 我们产出一个方案: 自己在instance上起一个假的metadata service. 将所有container中出来的、意图访问metadata server的流量全都导入假的metadata service中.
+假metadata service 的职责就是响应该请求, 并将一个通过assume role 拿到的credential 给返回回去.
+这样就让container 里面的credentials 获取路径就统一了, 不管容器套容器套了多少层, 最后拿role的credentials的时候都会走到我们假的metadata service上.</p>
+<h2 id="工具">工具</h2>
+<p>思路有了, 那我们怎么来达成这个目的呢? 流量的劫持转发我们可以用iptables, 现在就差一个fake metadata service 的实现了, 难道要自己写吗? 本着不重复造轮子的精神, 上GitHub!! 还真功夫不负有心人, 找到一个不错的<a href="https://github.com/lyft/metadataproxy"target="_blank" rel="noopener noreferrer">实现</a>
+.</p>
+<h2 id="实现">实现</h2>
+<p>有了工具, 那就开始动手吧!!
+首先启动fake metadata service, 我们采用docker container的方式来跑这个服务, 在用它提供的库打好docker 镜像, 在EC2 机器上通过下述命令启动fake metadata service.</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">docker run -d -e <span class="nv">MOCK_API</span><span class="o">=</span><span class="nb">true</span> --net<span class="o">=</span>host -v /var/run/docker.sock:/var/run/docker.sock &lt;image that you just build&gt;
+</code></pre></div><p>注意: 这里的network 要设置成host, 我们待会在解释为什么.</p>
+<p>fake metadata service 有了, 那就要将容器的相关请求劫持下来导入到fake metadata service 上了:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">LOCAL_IPV4</span><span class="o">=</span><span class="k">$(</span>curl http://169.254.169.254/latest/meta-data/local-ipv4<span class="k">)</span>
+
+/sbin/iptables <span class="se">\
+</span><span class="se"></span> --append PREROUTING <span class="se">\
+</span><span class="se"></span> --destination 169.254.169.254 <span class="se">\
+</span><span class="se"></span> --protocol tcp <span class="se">\
+</span><span class="se"></span> --dport <span class="m">80</span> <span class="se">\
+</span><span class="se"></span> --in-interface docker0 <span class="se">\
+</span><span class="se"></span> --jump DNAT <span class="se">\
+</span><span class="se"></span> --table nat <span class="se">\
+</span><span class="se"></span> --to-destination <span class="nv">$LOCAL_IPV4</span>:8000 <span class="se">\
+</span><span class="se"></span> --wait
+</code></pre></div><p>上述命令就是将从docker0 虚拟网口出来的、欲意访问169.254.169.254:80 的tcp请求导入到本机的8080 端口上. 这里就可以理解为什么上述服务要起在host networking模式了, 因为我们要把所有通过docker0出来的访问请求都导入到fake metadata service 上, 如果我们的假的metadata service也在桥接模式下, 那我们去assume role时要拿的那个execution role credentials的请求也会被导入到假的server 上&hellip; bang!! 我们的metadata service 就不能拿到Execution role的权限了, 也就没办法去assume 到task role啦.</p>
+<p>在做完这一步以后, 我们就只需要在运行容器的时候, 将你欲意使用的task role的arn 设置成环境变量传给容器(对我们来说这是非常好控制的, 因为CI agent container就是通过我们的编排跑起来的).</p>
+<p>到此为止, 这台机器就能很好的实现task role和execution role的区分了, 当然了, execution role 要有权限去assume task role, 这种基础细节就不一一介绍了.</p>
+<p>整体实现下来结构大致如下图所示:
+<img  src="/images/second-tier-role-on-ec2/1.jpeg"
+        alt/></p>
+</article><section class="article labels"><a class="category" href=/categories/aws-sap/>AWS SAP</a></section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/the-tricky-point-on-kms-authorization/"><span class="iconfont icon-article"></span>AWS KMS 授权的“坑”</a></p><p><a class="link" href="/posts/aws-authentication-and-authorization-overview-2/"><span class="iconfont icon-article"></span>一个AWS资源访问请求的历程(二) </a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

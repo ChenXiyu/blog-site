@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>一个更好的broken link checker&nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="一个更好的broken link checker" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">一个更好的broken link checker</h1><p class="article date">Saturday, April 24, 2021</p></section><article class="article markdown-body"><p>大家可能曾经或多或少有过这样的困扰：在某些网页/Wiki上面，好不容易找到我们期望的信息以后，点进去发现404了，就会很影响使用者的体验。 而对于我们自己的页面来说，我们当然不想让我们自己的用户有这样的体验啦。</p>
+<h2 id="aws-提供的解决方案">AWS 提供的解决方案</h2>
+<p>基于这样的一种痛点，AWS提供了一个解决方案：基于CloudWatch Synthetics 的Broken Link check。</p>
+<p>我们可以基于我们的需求使用<code>CloudWatch Synthetics</code>创建一个 做Broken link check 的<code>Canary</code>。
+更多关于如何使用CloudWatch Synthetics 创建Canary，请移步<a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries.html"target="_blank" rel="noopener noreferrer">官方文档</a>
+，我们这篇文章将更多的聚焦在我们修改过后的版本以及我们提供的一键部署的实现。</p>
+<h2 id="aws-的实现所存在的问题">AWS 的实现所存在的问题</h2>
+<p>AWS 已经提供了一个版本的实现，但是AWS 的实现并不能完全满足我们的要求：它通过爬取页面上的超链接，然后一层一层的爬取与扫描，而不在乎它当前扫描的页面到底还是不是我们期望它扫描的页面（停止条件是根据用户设置的一个depth 参数来判断到底需要扫描多少链接）。这种实现下，我们即使将这个depth 设置的再大也不能保证我们自己的页面会被完全扫描到。
+这样的话，既费钱，也没有满足我们的需求。</p>
+<h2 id="改进后的版本">改进后的版本</h2>
+<p>基于AWS 的实现，我在上面做了些许修改，让Broken Link Checker 能真正扫描所有在我们页面上引用的链接，不管是外部还是内部，但又不会深入非我们期望扫描的页面去扫描。
+实现在<a href="https://github.com/ChenXiyu/broken-link-checker"target="_blank" rel="noopener noreferrer">这里</a>
+，使用方式请移步<a href="https://github.com/ChenXiyu/broken-link-checker/blob/master/README.md"target="_blank" rel="noopener noreferrer">Readme</a>
+，有需要自取。</p>
+<p>改进方式其实也很简单：在进一步扫描页面的子链接之前，先判断当前页面是不是和我们期望扫描的URL 在同一个domain 底下，只有在同一个domain 才继续深入爬取链接。
+这样我们就可以将Depth 设置得足够大，Canary 会在扫描完所有需要扫描的链接以及页面以后停下来。
+<img  src="/images/check-broken-links-with-AWS-cloudwatch-synthetic/1.png"
+        alt/></p>
+<h2 id="适用场景">适用场景</h2>
+<p>Broken link checker 有自身特有的适用性，并不适合所有网页应用。</p>
+<h3 id="不适用">不适用</h3>
+<ol>
+<li>它不适合动态网页应用的扫描，</li>
+<li>它不适用需要身份认证的页面的扫描
+像以上场景的扫描应该被冒烟测试或者端到端（E2E）测试所覆盖，而不是简单的链接扫描。</li>
+</ol>
+<h3 id="适用于">适用于</h3>
+<ol>
+<li>文档/Wiki 等静态页面。
+个人认为文档和Wiki 的使用场景是最需要它也是最能让它发挥作用的地方。</li>
+</ol>
+</article>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/sign-your-git-commit/"><span class="iconfont icon-article"></span>Sign Your Work</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

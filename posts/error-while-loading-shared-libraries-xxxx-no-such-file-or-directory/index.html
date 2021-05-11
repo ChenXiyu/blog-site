@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>error:while loading shared libraries:xxxx no such file or directory&nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="error:while loading shared libraries:xxxx no such file or directory" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">error:while loading shared libraries:xxxx no such file or directory</h1><p class="article date">Sunday, October 4, 2015</p></section><article class="article markdown-body"><p>编译完jpeglib和jp2a 运行jp2a 提示<code>error:while loading shared libraries:jpeglib.so.9 no such file or directory</code>,jpeglib是刚刚编译好的。</p>
+<pre><code>$updatedb
+$locate jpeglib.so.9
+</code></pre><p>能找到库文件在/usr/local/lib目录下
+摘录解决办法如下，留作学习用：
+一般我们在Linux下执行某些外部程序的时候可能会提示找不到共享库的错误, 比如:<code>tmux: error while loading shared libraries: libevent-1.4.so.2: cannot open shared object file: No such file or directory</code>原因一般有两个:</p>
+<ul>
+<li>操作系统里确实没有包含该共享库(lib*.so.*文件)或者共享库版本不对, 遇到这种情况那就去网上下载并安装上即可.</li>
+<li>已经安装了该共享库, 但执行需要调用该共享库的程序的时候, 程序按照默认共享库路径找不到该共享库文件.所以安装共享库后要注意共享库路径设置问题</li>
+</ul>
+<p>解决办法如下:</p>
+<h2 id="情景1">情景1</h2>
+<p>如果共享库文件安装到了/lib或/usr/lib目录下, 那么需执行一下ldconfig命令<br>
+ldconfig命令的用途, 主要是在默认搜寻目录(/lib和/usr/lib)以及动态库配置文件/etc/ld.so.conf内所列的目录下, 搜索出可共享的动态链接库(格式如lib*.so*), 进而创建出动态装入程序(ld.so)所需的连接和缓存文件. 缓存文件默认为/etc/ld.so.cache, 此文件保存已排好序的动态链接库名字列表.</p>
+<h2 id="情景2">情景2</h2>
+<p>如果共享库文件安装到了<code>/usr/local/lib</code>(很多开源的共享库都会安装到该目录下)或其它&quot;非/lib或/usr/lib&quot;目录下, 那么在执行ldconfig命令前, 还要把新共享库目录加入到共享库配置文件<code>/etc/ld.so.conf</code>中, 如下:</p>
+<pre><code># cat /etc/ld.so.conf
+include ld.so.conf.d/*.conf
+# echo &quot;/usr/local/lib&quot; &gt;&gt; /etc/ld.so.conf
+# ldconfig
+</code></pre><h2 id="情景3">情景3</h2>
+<p>如果共享库文件安装到了其它&quot;非/lib或/usr/lib&quot;目录下,但是又不想在/etc/ld.so.conf中加路径(或者是没有权限加路径).那可以<strong>export一个全局变量LD_LIBRARY_PATH</strong>,然后运行程序的时候就会去这个目录中找共享库.LD_LIBRARY_PATH的意思是告诉loader在哪些目录中可以找到共享库.可以设置多个搜索目录,这些目录之间用冒号分隔开.比如安装了一个mysql到/usr/local/mysql目录下,其中有一大堆库文件在/usr/local/mysql/lib下面,则可以在<code>.bashrc</code>或<code>.bash_profile</code>或shell里加入以下语句即可:</p>
+<pre><code>export LD_LIBRARY_PATH=/usr/local/mysql/lib:$LD_LIBRARY_PATH
+</code></pre><p>一般来讲这只是一种临时的解决方案,在没有权限或临时需要的时候使用.</p>
+<h2 id="情景4">情景4</h2>
+<p>如果程序需要的库文件比系统目前存在的村文件版本低，可以做一个链接,比如：
+<code>error while loading shared libraries: libncurses.so.4: cannot open shared object file: No such file or directory</code></p>
+<pre><code>ls /usr/lib/libncu*
+/usr/lib/libncurses.a   /usr/lib/libncurses.so.5
+/usr/lib/libncurses.so  /usr/lib/libncurses.so.5.3
+</code></pre><p>可见虽然没有libncurses.so.4，但有libncurses.so.5，是可以向下兼容的建一个链接就好了</p>
+<pre><code>ln -s  /usr/lib/libncurses.so.5.3  /usr/lib/libncurses.so.4
+</code></pre></article><section class="article labels"><a class="tag" href=/tags/error/>error</a><a class="tag" href=/tags/linux/>linux</a></section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/practical_vim_1/"><span class="iconfont icon-article"></span>«Practical Vim» 1</a></p><p><a class="link" href="/posts/github-2fa/"><span class="iconfont icon-article"></span>github两步认证丢失后处理方法</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

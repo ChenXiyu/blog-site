@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>vim的寄存器&nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="vim的寄存器" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">vim的寄存器</h1><p class="article date">Wednesday, October 7, 2015</p></section><article class="article markdown-body"><table>
+<thead>
+<tr>
+<th align="center">类别</th>
+<th align="center">符号</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">未命名寄存器</td>
+<td align="center">&quot;</td>
+<td align="left">上次复制或删除的文本</td>
+</tr>
+<tr>
+<td align="center">数字寄存器</td>
+<td align="center">0-9</td>
+<td align="left">文本删除历史</td>
+</tr>
+<tr>
+<td align="center">短删除寄存器</td>
+<td align="center">-</td>
+<td align="left">删除少于一行的文本</td>
+</tr>
+<tr>
+<td align="center">命名寄存器</td>
+<td align="center">a-z,A-Z</td>
+<td align="left">存放文本</td>
+</tr>
+<tr>
+<td align="center">只读寄存器</td>
+<td align="center">%</td>
+<td align="left">当前文件名</td>
+</tr>
+<tr>
+<td align="center">只读寄存器</td>
+<td align="center">#</td>
+<td align="left">交替文件的名字</td>
+</tr>
+<tr>
+<td align="center">只读寄存器</td>
+<td align="center">.</td>
+<td align="left">上次插入的文本</td>
+</tr>
+<tr>
+<td align="center">只读寄存器</td>
+<td align="center">:</td>
+<td align="left">上次执行的命令</td>
+</tr>
+<tr>
+<td align="center">表达式寄存器</td>
+<td align="center">=</td>
+<td align="left">返回表达式结果</td>
+</tr>
+<tr>
+<td align="center">选择寄存器</td>
+<td align="center">*</td>
+<td align="left">系统剪切板</td>
+</tr>
+<tr>
+<td align="center">系统剪切板寄存器</td>
+<td align="center">+</td>
+<td align="left">系统剪切板(x11)</td>
+</tr>
+<tr>
+<td align="center">拖拽寄存器</td>
+<td align="center">~</td>
+<td align="left">拖拽的文本</td>
+</tr>
+<tr>
+<td align="center">黑洞寄存器</td>
+<td align="center">_</td>
+<td align="left">永久删除的文本</td>
+</tr>
+<tr>
+<td align="center">搜索模式寄存器</td>
+<td align="center">/</td>
+<td align="left">搜索模式</td>
+</tr>
+</tbody>
+</table>
+<h2 id="未命名寄存器the-unnamed-register">未命名寄存器（The Unnamed Register）</h2>
+<p>当使用y命令复制文本，或使用d、c、s、x命令删除文本时，文本将自动被放入<code>&quot;&quot;</code>未命名寄存器。即使你在复制或删除文本时，已经指定了寄存器（例如使用<code>&quot;xdd</code>命令），这些文本也将会被同时放入<code>&quot;x</code>和<code>&quot;&quot;</code>寄存器。</p>
+<h2 id="数字寄存器the-numbered-registers">数字寄存器（The Numbered Registers）</h2>
+<p><code>&quot;0</code>始终存放最近删除的文本。<code>&quot;1</code>也包含上次删除的文本。区别在于：<code>&quot;0</code>不断被删除的文本所覆盖；而如果删除文本时，指定了寄存器或者文本小于一行，那么<code>&quot;1</code>将不会被更新。数字寄存器1-9可以看作是删除历史，你可以从中找到早先删除的文本。比如你使用了三次<code>dd</code>命令，那么这三行文本被分别存放在寄存器1,2,3中，可以通过命令<code>&quot;1P</code>,<code>&quot;2P</code>,<code>&quot;3P</code>将这些文本再粘贴回来。</p>
+<h2 id="短删除寄存器the-small-delete-register">短删除寄存器（The Small Delete Register）</h2>
+<p>当删除少于一行的文本时，除非指定了某个寄存器，否则这些内容将会被放入<code>&quot;-</code>短删除寄存器中。</p>
+<h2 id="命名寄存器the-named-registers">命名寄存器（The Named Registers）</h2>
+<p>当文本被放入以小写字母命名的寄存器（例如<code>&quot;a</code>）时，该寄存器原有的内容将被覆盖；而使用以大写字母命名的寄存器（例如<code>&quot;A</code>）时，将会把文本追加到原有内容之后。</p>
+<h2 id="只读寄存器the-read-only-registers">只读寄存器（The Read-Only Registers）</h2>
+<p>你只能从4个只读寄存器中粘贴内容，而不能放入文本。<code>&quot;%</code>包含当前文件名；<code>&quot;#</code>包含交替文件名；<code>&quot;.</code>包含最近插入的文本；<code>&quot;:</code>包含上次执行的命令行。</p>
+<h2 id="表达式寄存器the-expression-register">表达式寄存器（The Expression Register）</h2>
+<p>当我们输入<code>&quot;=</code>，就会在Vim底部显示一个以&quot;＝&quot;开始的提示行，可以在这里输入表达式并按回车键确认。随后使用命令p将表达式的结果粘贴到文本中。例如要在文本中插入38*56的值，首先进入命令模式，输入<code>&quot;=</code>，在屏幕底部的提示行中输入&quot;38*56&quot;并按回车，然后输入命令p，这样就可以将计算结果插入文本中了。在表达式寄存器中，不仅可以使用通常的算术运算符，还可以使用Vim特定的函数和运算符。例如通过表达式寄存器来得到环境变量的值（例如&quot;=$HOME）。如果没有输入任何表达式而直接按回车键，那么Vim将执行最近使用过的表达式。</p>
+<h2 id="选择和拖拽寄存器the-selection-and-drop-registers">选择和拖拽寄存器（The Selection and Drop Registers）</h2>
+<p>有3个寄存器用于保存选中的文本：<code>&quot;+</code>用于访问系统剪切板。在Windows下，<code>&quot;*</code>和<code>&quot;+</code>相同；在Linux下，<code>&quot;*</code>包含选中的文本，<code>&quot;+</code>包含复制的文本。使用<code>&quot;*y</code>命令，可以将当前选中的文本复制到系统剪切板中。而<code>&quot;+p</code>命令，则可以粘贴系统剪切板中的内容。通过剪切板寄存器，能够在不同的Vim编辑器或者是其他应用程序之间，进行文本交换。<code>&quot;~</code>包含上次从其它应用程序拖拽到Gvim中的文本。</p>
+<h2 id="黑洞寄存器the-black-hole-register">黑洞寄存器（The Black Hole Register）</h2>
+<p>任何放入<code>&quot;_</code>中的文本都将不复存在。如果想要永久删除某些文本而不是将他放入1-9中的某个寄存中，就可以使用黑洞寄存器。例如：命令<code>dd</code>将删除一行文本并将其放入寄存器1中；而命令<code>&quot;_dd</code>则将该行文本放入黑洞寄存器中，这些文本也就会永久消失了，而寄存器1中的文本会保持不变。</p>
+<h2 id="搜索模式寄存器search-pattern-register">搜索模式寄存器（Search Pattern Register）</h2>
+<p>当你通过<code>/</code>命令进行搜索时，所使用的模式将自动被放入<code>&quot;/</code>寄存器。</p>
+<h2 id="普通寄存器使用">普通寄存器使用</h2>
+<ul>
+<li>normal mode 下键入<code>:reg</code>,将能看到数字寄存器,短删除寄存器和只读寄存器的内容.</li>
+<li>使用<code>&quot;</code>加寄存器名称使用寄存器,比如粘贴出寄存器9的内容:<code>&quot;9p</code>,将<code>dd</code>掉的内容放到寄存器C中:<code>&quot;Cdd</code></li>
+</ul>
+<h2 id="使用表达式寄存器">使用表达式寄存器</h2>
+<ol>
+<li>在insert mode 下键入<code>&lt;C-r&gt;=</code>,然后输入表达式,就能在当前位置放置你表达式计算后的内容.</li>
+<li>在normal mode 下键入<code>&quot;=</code>,将会在状态栏出现一个<code>=</code>,继续输入表达式,按下回车,接着就可以使用<code>p</code>来粘贴寄存器的内容了.</li>
+</ol>
+</article><section class="article labels"><a class="category" href=/categories/vim/>Vim</a><a class="tag" href=/tags/vim/>Vim</a></section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/practical_vim_2/"><span class="iconfont icon-article"></span>«Practical Vim» 2</a></p><p><a class="link" href="/posts/practical_vim_1/"><span class="iconfont icon-article"></span>«Practical Vim» 1</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>github两步认证丢失后处理方法&nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="github两步认证丢失后处理方法" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">github两步认证丢失后处理方法</h1><p class="article date">Tuesday, September 29, 2015</p></section><article class="article markdown-body"><p>当你无法进行两步认证后,你有如下几种方法来登录github</p>
+<h2 id="recovery-code">recovery-code</h2>
+<p>github设置了两步认证以后有一个recovery-code要你下载，并且会在邮件里面通知你，这时你最好是下载下来保存好。在github 2FA的说明里面解释说这是在丢失两步认证后能登录帐号的唯一方式。的确是这样，在两步认证没办法进行下去时，你可以输入你的recovery-code来登录github。如果你没有下载下来，那么往下</p>
+<h2 id="手机认证身份">手机认证身份</h2>
+<p>国内没法绑定手机号</p>
+<h2 id="私钥认证你的身份">私钥认证你的身份</h2>
+<p>在一台你上传了公钥的机器上执行：<code>ssh -T git@github.com verify</code> 他将返回一段字符串，将这段字符串提供给github的工作人员，他们可以帮你解除2FA(表扬一下github的工作人员效率还是很高的，而且有问必答，即使你的英语写的和我一样屎).</p>
+<h2 id="后话">后话</h2>
+<p>如果你的2FA失效了,恰巧你又在国内，没有绑定手机号，又没有下载recovery-code，还没有一台机器是上传了public key的，那么我觉得你真的就只能放弃该帐号了.<br>
+ps:修改密码是没有用的</p>
+</article>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/error-while-loading-shared-libraries-xxxx-no-such-file-or-directory/"><span class="iconfont icon-article"></span>error:while loading shared libraries:xxxx no such file or directory</a></p><p><a class="link" href="/posts/git-change_your_commit/"><span class="iconfont icon-article"></span>Git:更改你的提交</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

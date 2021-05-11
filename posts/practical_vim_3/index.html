@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>«Practical Vim» 3&nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="«Practical Vim» 3" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">«Practical Vim» 3</h1><p class="article date">Thursday, December 3, 2015</p></section><article class="article markdown-body"><h2 id="缓存区">缓存区</h2>
+<h3 id="查看缓存区">查看缓存区</h3>
+<p><code>:ls</code>查看当前被载入内存的缓存区
+<code>:bnext</code>切换到下一个缓存区
+<code>%</code>代表哪个缓存区在当前窗口可见
+<code>#</code>代表轮换缓冲区
+<code>&lt;C-^&gt;</code>在当前缓冲区和轮换缓冲区中切换</p>
+<h3 id="切换缓存区">切换缓存区</h3>
+<p><code>:bprev</code> == <code>:bprevious</code> 切换到上一个缓存区
+<code>:bnext</code> == <code>:bNext</code> 切换到上一个缓存区
+<code>:bfirst</code> 切换到第一个缓存区
+<code>:blast</code> 切换到最后一个缓存区
+使用<code>:ls</code>查看缓存区列表的时候，每一项前面有一个数字，这是vim在创建缓存区的时候给分配的，我们可以使用<code>:buffer N</code>来使某一个缓存区在当前页面显示出来。或者用更加直观的：<code>:buffer {bufname}</code>其中的{bufname}只要是缓存区名字中能唯一标识</p>
+<h3 id="删除缓存区">删除缓存区</h3>
+<p>先说明，删除缓存区并不会对文件产生任何影响，只是将内存中的那份副本给删除了。删除缓存去使用的命令是<code>:bdelete</code>,可以简写成<code>:bd</code>，其有两种用法：<code>:[range]bd</code>/<code>:bd N1 N2 N3 ...</code>第一种用法是删除[range]所包含的缓存区，比如<code>:3,6bd</code>表示删除标号为3、4、5、6的缓存区。第二种用法是删除单个的缓存区。没有什么好说的。一般情况下我们是不需要去删除缓存区的，所以这几个命令用得也不多噢～</p>
+<h3 id="使用参数列表将缓存区分组">使用参数列表将缓存区分组</h3>
+<p><code>:args</code>可以查看vim中的参数列表，输出中<code>[]</code>将标识处当前那个文件为活动文件，使用<code>:argdo</code>可以在每一个缓存区上运行一条EX命令.参数列表是vi遗留下来的功能，但是在vim中这个功能也有所增强，虽然与缓存区列表相比，参数列表显得有点寒酸，但请给他一个机会，它是缓存区列表一个强有力的补充
+使用<code>args {argList}</code>可以修改vim的参数列表，其中{argList}可以是文件名、文件通配符、某个命令的输出(使用反引号);比如<code>:args index.html app.js</code>，这个命令会将后面所带的两个文件也加入到缓存区中，如果是大量文件，可以使用文件通配符。说到文件通配符，我们就能引出下一个话题了</p>
+<h3 id="glob模式指定文件">Glob模式指定文件</h3>
+<p>和在shell中一样，<code>*</code>代表匹配0个或多个字符，并且它不能递归目录，与shell中不太一样的是：<code>**</code>可以匹配0个到任意个字符，并且他能递归进目录中，在上一个技巧中，我们正好可以使用这两个通配符来将大量文件加入缓存区中了。</p>
+<h2 id="窗口分割">窗口分割</h2>
+<h3 id="创建分割窗口">创建分割窗口</h3>
+<p><code>&lt;C-w&gt;s</code>水平分割窗口，<code>&lt;C-w&gt;v</code>垂直分割窗口，大屏幕必备神器。
+以上两个key map 分别对应两个命令：<code>:sp[lit]{file}</code>和<code>:vsp[lit]{file}</code>.</p>
+<h3 id="窗口间切换">窗口间切换</h3>
+<p><code>&lt;C-w&gt;w</code>在窗口间循环切换
+<code>&lt;C-w&gt;h/j/k/l</code>切换打左/下/上/右边的窗口
+实际上<code>&lt;C-w&gt;&lt;C-w/h/j/k/l&gt;</code>效果与后一个字符不使用<code>&lt;C&gt;</code>是一样的</p>
+<h3 id="关闭窗口">关闭窗口</h3>
+<p>最简单的是<code>:q</code>是关闭当前的窗口。
+还有<code>:clo[se]</code>也是关闭当前窗口。
+而<code>:on[ly]</code>是只保留当前窗口，关闭其他窗口。</p>
+<h3 id="调节窗口大小">调节窗口大小</h3>
+<p><code>&lt;C-w&gt;=</code>使得所有窗口等宽等高
+<code>&lt;C-w&gt;_</code>最大化当前窗口的高度
+<code>&lt;C-w&gt;|</code>最大化当前窗口的宽度
+<code>[N]&lt;C-w&gt;_</code>把活动窗口的高度设置为[N]行
+<code>[N]&lt;C-w&gt;|</code>把活动窗口的宽度设置为[N]列
+<code>[N]&lt;C-w&gt;&gt;</code>把活动窗口的大小调大[N]
+<code>[N]&lt;C-w&gt;&lt;</code>把活动窗口的大小调小[N]
+vim也支持窗口重新排列，请查阅<code>:h window-moving</code></p>
+<h3 id="使用标签页">使用标签页</h3>
+<h4 id="切换窗口的工作目录">切换窗口的工作目录</h4>
+<p><code>lcd {path}</code>可以设置当前窗口的本地工作目录
+<code>lcd</code>只是作用在了当前窗口，而没有改变整个标签，如果一个标签包含了两个或者更多的窗口，我们可以使用<code>windo lcd {path}</code>来作用到所有这些窗口上</p>
+<h4 id="创建标签">创建标签</h4>
+<p><code>tabedit {filename}</code>打开一个新标签，并在这个标签中打开{filename}，如果没有加这个参数，那么会打开一个新标签，里面包含一个空缓存区。
+如果当前标签页中不止一个窗口，那么可以使用<code>&lt;C-w&gt;T</code>来将当前活动窗口移动到新的标签中。</p>
+<h4 id="关闭标签">关闭标签</h4>
+<p>如果标签中只有一个窗口，那么使用<code>:q</code>/<code>:close</code>/<code>tabclose</code>都可以关闭一个标签
+同样我们也可以使用<code>:tabonly</code>只保留当前活动的标签。</p>
+<h4 id="标签间的切换">标签间的切换</h4>
+<p>标签的开始标号是1,我们可以使用<code>[N]gt</code>在标签间跳转，如果省略掉[N]那么将会跳转到下一个标签，<code>gT</code>作用一样，不过是反向跳转
+其对应的命令分别是：
+<code>:tabn[ext] {N}</code> -&gt; <code>{N} gt</code>
+<code>:tabn[ext]</code> -&gt; <code>gt</code>
+<code>:tabp[revious]</code> -&gt; <code>gT</code></p>
+<h4 id="重新排列标签">重新排列标签</h4>
+<p><code>：tabmove [N]</code>可以重新排列标签页，当[N]为0时，标签被移动到开头，如果省略[N]，标签将被移动到最后</p>
+</article><section class="article labels"><a class="category" href=/categories/vim/>Vim</a><a class="tag" href=/tags/vim/>Vim</a></section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/practical_vim_4/"><span class="iconfont icon-article"></span>«Practical Vim» 4</a></p><p><a class="link" href="/posts/theartofcommunicate/"><span class="iconfont icon-article"></span>沟通的艺术课后感</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

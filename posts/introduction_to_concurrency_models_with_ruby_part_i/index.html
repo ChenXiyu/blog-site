@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>Ruby 并发模型介绍 第一部分 [译]&nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Ruby 并发模型介绍 第一部分 [译]" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">Ruby 并发模型介绍 第一部分 [译]</h1><p class="article date">Wednesday, September 6, 2017</p></section><article class="article markdown-body"><p>原文地址: <a href="https://engineering.universe.com/introduction-to-concurrency-models-with-ruby-part-i-550d0dbb970">https://engineering.universe.com/introduction-to-concurrency-models-with-ruby-part-i-550d0dbb970</a>
+在这系列文章的第一部分,我将会介绍:</p>
+<ul>
+<li>进程(Processes)和线程(Threads)的区别;</li>
+<li>GIL 是什么东西; EventMachine 和 Fibers 在 Ruby 中的使用;</li>
+<li>什么时候使用哪一种模型;</li>
+<li>哪些开源项目在使用它们;</li>
+<li>它们的优缺点分别是什么;</li>
+</ul>
+<p><img  src="/images/Introduction_to_Concurrency_Models_with_Ruby_Part_I/1.jpeg"
+        alt/></p>
+<h1 id="进程-processes">进程( Processes)</h1>
+<p>跑多个进程准确的说并不是并发( concurrency ), 而是并行( parallelism ). 尽管并发和并行经常被搞混,但是他们是不一样的东西,下面是一个简单的类比:</p>
+<ul>
+<li>并发: 一个人用一只手拿多个球来玩抛接球游戏,不管看上去是什么效果,这个人只能在一个时间点上抓/扔一个球</li>
+<li>并行: 多个人同时的各自拿多个球玩抛接球游戏.</li>
+</ul>
+<h2 id="顺序执行">顺序执行</h2>
+<p>假设我们有一个一定范围内的数字集合,我们要先把它转换到数组,然后找到一个指定的元素的下标:</p>
+<div class="highlight"><pre class="chroma"><code class="language-Ruby" data-lang="Ruby"><span class="n">range</span> <span class="o">=</span> <span class="mi">0</span><span class="o">...</span><span class="mi">10_000_000</span>
+<span class="n">number</span> <span class="o">=</span> <span class="mi">8_888_888</span>
+<span class="nb">puts</span> <span class="n">range</span><span class="o">.</span><span class="n">to_a</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre class="chroma"><code class="language-Bash" data-lang="Bash">$ <span class="nb">time</span> ruby sequential.rb
+<span class="m">8888888</span>
+ruby test.rb  0.41s user 0.06s system 95% cpu 0.502 total
+</code></pre></div><p>运行上述代码大约占用了1颗 cpu 的 500ms</p>
+<h2 id="并行执行">并行执行</h2>
+<p>我们将用并行的思想重写上面的代码:将数字集合分成两部分,用多个并行的进程来处理.使用 Ruby 标准库中的 <code>fork</code> 方法可以创建一个子进程,它将运行作为参数传入的块( block ),使用 <code>Process.wait</code> 来使父进程等待所有子进程直到所有子进程结束.</p>
+<div class="highlight"><pre class="chroma"><code class="language-Ruby" data-lang="Ruby"><span class="c1"># parallel.rb</span>
+<span class="n">range1</span> <span class="o">=</span> <span class="mi">0</span><span class="o">...</span><span class="mi">5_000_000</span>
+<span class="n">range2</span> <span class="o">=</span> <span class="mi">5_000_000</span><span class="o">...</span><span class="mi">10_000_000</span>
+<span class="n">number</span> <span class="o">=</span> <span class="mi">8_888_888</span>
+<span class="nb">puts</span> <span class="s2">&#34;Parent </span><span class="si">#{</span><span class="no">Process</span><span class="o">.</span><span class="n">pid</span><span class="si">}</span><span class="s2">&#34;</span>
+<span class="nb">fork</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s2">&#34;Child1 </span><span class="si">#{</span><span class="no">Process</span><span class="o">.</span><span class="n">pid</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">range1</span><span class="o">.</span><span class="n">to_a</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">number</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span> <span class="p">}</span>
+<span class="nb">fork</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s2">&#34;Child2 </span><span class="si">#{</span><span class="no">Process</span><span class="o">.</span><span class="n">pid</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">range2</span><span class="o">.</span><span class="n">to_a</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">number</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span> <span class="p">}</span>
+<span class="no">Process</span><span class="o">.</span><span class="n">wait</span>
+</code></pre></div><div class="highlight"><pre class="chroma"><code class="language-Bash" data-lang="Bash">$ <span class="nb">time</span> ruby parallel.rb
+Parent <span class="m">32771</span>
+Child2 32867: <span class="m">3888888</span>
+Child1 32865:
+ruby parallel.rb  0.40s user 0.07s system 153% cpu 0.309 total
+</code></pre></div><p>由于每一个进程都只处理集合中的一半的数据, 以上代码比顺序执行的代码稍微快一些,并且占用了多于1个 CPU, 运行时的进程树类似于:</p>
+<div class="highlight"><pre class="chroma"><code class="language-Ruby" data-lang="Ruby"><span class="c1"># \ - 32771 ruby parallel.rb (parent process)</span>
+<span class="c1">#  | - 32865 ruby parallel.rb (child process)</span>
+<span class="c1">#  | - 32867 ruby parallel.rb (child process)</span>
+</code></pre></div><h2 id="优势">优势</h2>
+<ul>
+<li>进程间不会共享内存，所以你不能在一个进程中修改另一个进程的数据，这使得写代码和调试代码更加简单</li>
+<li>在<a href="https://en.wikipedia.org/wiki/Ruby_MRI"target="_blank" rel="noopener noreferrer">Ruby MRI</a>
+中，由于GIL（global interpreter lock，后文会有更多关于GIL的信息）的存在，进程是唯一可以使用多余一个CPU核心的方式，在有些方面，比如做数学运算的时候，这种方式也许是很有用的。</li>
+<li>开子进程在避免内存溢出上可能有帮助，一旦进程完成，它将释放所有的资源</li>
+</ul>
+<h2 id="劣势">劣势</h2>
+<ul>
+<li>由于进程不能共享内存，它们将会占用很多内存&ndash;意思就是说：跑上百个进程也许是个问题。值得注意的是，从Ruby 2.0 以后， <code>fork</code> 使用操作系统的<a href="https://en.wikipedia.org/wiki/Copy-on-write"target="_blank" rel="noopener noreferrer">写时复制（Copy-On-Write）机制</a>
+，这使得进程间可以共享内存，前提是这块内存不会被写入不同的值。</li>
+<li>创建和销毁进程是很慢的</li>
+<li>使用进程可能也要考虑进程间通信，比如:<a href="https://ruby-doc.org/stdlib-2.4.1/libdoc/drb/rdoc/DRb.html"target="_blank" rel="noopener noreferrer">DRb</a>
+</li>
+<li>当心<a href="https://en.wikipedia.org/wiki/Orphan_process"target="_blank" rel="noopener noreferrer">孤儿进程(orphan processes)</a>
+（父进程已经结束或者被杀掉的子进程）和 <a href="https://en.wikipedia.org/wiki/Zombie_process"target="_blank" rel="noopener noreferrer">僵尸进程(zombie processes)</a>
+（已经结束但是仍然占据这进程表的子进程）</li>
+</ul>
+<h2 id="开源实例">开源实例</h2>
+<ul>
+<li><a href="https://bogomips.org/unicorn/"target="_blank" rel="noopener noreferrer">Unicorn</a>
+ server &ndash; 它先加载应用代码，HTTP请求到来时，通过复制（forks）主进程（master process）来产出子进程作为worker来响应实际的HTTP请求。</li>
+<li><a href="https://github.com/resque/resque"target="_blank" rel="noopener noreferrer">Resque</a>
+ 用于处理后台任务 &ndash; 它会运行一个worker， 然后通过复制（fork）子进程来顺序的执行后台任务</li>
+</ul>
+<h1 id="线程threads">线程（Threads）</h1>
+<p>尽管从Ruby 1.8版本开始，Ruby 就使用操作系统原生的线程（threads），由于MRI中GIL的存在，即使你有多个CPU，在一个进程中任意给定的时间点上，只有一个线程可以被执行，GIL同样存在于其他的一些编程语言中，比如Python</p>
+<h2 id="为什么gil会存在">为什么GIL会存在</h2>
+<p>这有好些原因，比如：</p>
+<ul>
+<li>避免在C库（C extensions）中发生条件竞争(race condition),不用考虑线程安全（threads-safety）</li>
+<li>实现起来更加简单，不用考虑Ruby的数据结构线程安全性</li>
+</ul>
+<p>早在2014年的时候，松本行弘就开始考虑<a href="https://twitter.com/yukihiro_matz/status/495219763883163648"target="_blank" rel="noopener noreferrer">逐步移除GIL</a>
+，因为它并没有完全保证我们的Ruby 代码是线程安全的，并且限制了我们更好的使用并发。(译者注：GIL的存在是为了保证Ruby底层C代码的线程安全，而不是Ruby代码的线程安全，GIL也没有提供任何应用接口供Ruby应用开发者使用，而上面说的使得实现简单是指在用C实现Ruby 解释器时更简单，而不是开发Ruby代码时更简单。！！！GIL不能保证Ruby代码线程安全！！！）</p>
+<h2 id="条件竞争race-conditions">条件竞争（Race-conditions）</h2>
+<p>这里有一个条件竞争的简单事例：</p>
+<div class="highlight"><pre class="chroma"><code class="language-Ruby" data-lang="Ruby"><span class="c1"># threads.rb</span>
+<span class="vi">@executed</span> <span class="o">=</span> <span class="kp">false</span>
+<span class="k">def</span> <span class="nf">ensure_executed</span>
+  <span class="k">unless</span> <span class="vi">@executed</span>
+    <span class="nb">puts</span> <span class="s2">&#34;executing!&#34;</span>
+    <span class="vi">@executed</span> <span class="o">=</span> <span class="kp">true</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="n">threads</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">times</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="no">Thread</span><span class="o">.</span><span class="n">new</span> <span class="p">{</span> <span class="n">ensure_executed</span> <span class="p">}</span> <span class="p">}</span>
+<span class="n">threads</span><span class="o">.</span><span class="n">each</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:join</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre class="chroma"><code class="language-Bash" data-lang="Bash">$ ruby threads.rb
+executing!
+executing!
+</code></pre></div><p>我们创建了10个线程来执行 <code>ensure_executed</code> 方法，并且对10个线程分别调用了一次 <code>join</code> 方法，主线程将会等待所有子线程完成。由于线程共享了变量 <code>@executed</code> ,上述代码输出了两次 <code>executing!</code> ,我们对变量 <code>@variable</code> 的读取和写入不是原子操作，那么在一个线程读取完这个变量以后；修改这个变量以前，这个变量的值也许已经被其他线程给修改了。</p>
+<h2 id="gil-和-io阻塞">GIL 和 I/O阻塞</h2>
+<p>GIL不允许在同一个时间执行多个线程不代表线程就没有用武之地了，当线程遇到阻塞式的I/O操作（HTTP 请求，DB 查询，磁盘读/写，甚至是 <code>sleep</code> ）时，它会释放GIL</p>
+<div class="highlight"><pre class="chroma"><code class="language-Ruby" data-lang="Ruby"><span class="c1"># sleep.rb</span>
+<span class="n">threads</span> <span class="o">=</span> <span class="mi">10</span><span class="o">.</span><span class="n">times</span><span class="o">.</span><span class="n">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span>
+  <span class="no">Thread</span><span class="o">.</span><span class="n">new</span> <span class="p">{</span> <span class="nb">sleep</span> <span class="mi">1</span> <span class="p">}</span>
+<span class="k">end</span>
+<span class="n">threads</span><span class="o">.</span><span class="n">each</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:join</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre class="chroma"><code class="language-Bash" data-lang="Bash">$ <span class="nb">time</span> ruby sleep.rb
+ruby sleep.rb  0.08s user 0.03s system 9% cpu 1.130 total
+</code></pre></div><p>可以看到，10个线程都休眠了1s并且几乎在同一时间运行结束。当一个线程进入休眠，它会将执行权交到其他线程，而不会阻塞GIL</p>
+<h2 id="优势-1">优势</h2>
+<ul>
+<li>更少的内存占用，使得创建上千个线程变得可行，在创建和销毁时速度更快</li>
+<li>在I/O阻塞式操作很多时，线程变得非常有用</li>
+<li>在需要的时候，可以访问其他线程的内存块</li>
+</ul>
+<h2 id="劣势-1">劣势</h2>
+<ul>
+<li>需要非常小心的考虑同步以避免条件竞争的问题，通常使用锁定原语（locking primitives），而有时候又会因此导致死锁发生。以上这些都导致这种线程安全的代码非常难以开发、测试和调试。</li>
+<li>使用线程，你不仅仅要保证你的代码是线程安全的，你还要保证你所依赖的代码是线程安全的。</li>
+<li>创建越多的线程，将会有越多的资源和时间花在线程间上下文的切换上，将会导致越少的时间花在实际工作的处理中。</li>
+</ul>
+<h2 id="开源实例-1">开源实例</h2>
+<ul>
+<li><a href="https://github.com/puma/puma"target="_blank" rel="noopener noreferrer">Puma</a>
+ 服务器 &ndash; 允许进程使用多个线程（集群模式）。与Unicorn 类似，它会提前加载应用代码，并且复制主进程，每一个子进程都有自己的线程池。在大多数情况下，线程都运行的非常不错，因为每一个HTTP请求都可以被一个单独的线程所处理，而且在不同的请求之间没有多少资源需要共享。</li>
+<li><a href="https://github.com/mperham/sidekiq"target="_blank" rel="noopener noreferrer">Sidekiq</a>
+ 后台任务处理 &ndash; 默认情况下跑一个进程，25个线程，每个线程分时的处理一个后台任务。</li>
+</ul>
+<h1 id="eventmachine">EventMachine</h1>
+<p>EventMachine（又称 EM）是一个用C++和Ruby实现的gem，它使用<a href="https://en.wikipedia.org/wiki/Reactor_pattern"target="_blank" rel="noopener noreferrer">反应器模式（Reactor Pattern）</a>
+为Ruby提供了事件驱动I/O（event-driven I/O）的特性, 基本上可以让你的Ruby代码看上去像Node.js。在EM内部，在轮训事件循环期间，EM使用Linux的select()来查看是否有新的输入进入文件描述符。
+通常使用EM的理由是：遇到很多I/O操作，而又不想自己手动的操作线程去处理I/O。手动操作线程有点困难而从资源的角度看，时常手动操作线程的开销又有点大。使用EM，不用任何特殊处理，你可以使用一个线程处理多个HTTP请求</p>
+<div class="highlight"><pre class="chroma"><code class="language-Ruby" data-lang="Ruby"><span class="c1"># em.rb</span>
+<span class="no">EM</span><span class="o">.</span><span class="n">run</span> <span class="k">do</span>
+  <span class="no">EM</span><span class="o">.</span><span class="n">add_timer</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span>
+    <span class="nb">puts</span> <span class="s1">&#39;sleeping...&#39;</span>
+    <span class="no">EM</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;sleep 1&#39;</span><span class="p">)</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s2">&#34;woke up!&#34;</span> <span class="p">}</span>
+    <span class="nb">puts</span> <span class="s1">&#39;continuing...&#39;</span>
+  <span class="k">end</span>
+  <span class="no">EM</span><span class="o">.</span><span class="n">add_timer</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="no">EM</span><span class="o">.</span><span class="n">stop</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre></div><div class="highlight"><pre class="chroma"><code class="language-Bash" data-lang="Bash">$ ruby em.rb
+sleeping...
+continuing...
+woke up!
+</code></pre></div><p>上述例子展示了怎么使用 <code>EM.system</code> 来异步运行一个系统命令（I/O操作），并将传入的块当做回调，传入的回调会在系统命令完成后被执行。</p>
+<h2 id="优势-2">优势</h2>
+<ul>
+<li>可以使用单线程为网页服务器、代理服务器等慢网络应用带来卓越的性能</li>
+<li>使用它可以避免复杂的多线程编程，复杂的多线程编程的不利之处我们前面已经讨论过了。</li>
+</ul>
+<h2 id="劣势-2">劣势</h2>
+<ul>
+<li>所有的I/O操作都需要支持EM异步，这就意味着你应该使用指定的操作系统、DB适配器、HTTP客户端、等等。which can result in monkey-patched versions, lack of support and limited options.</li>
+<li>在一个事件循环周期内主线程所完成的工作应该尽可能小，同时，这使得使用<a href="http://www.rubydoc.info/github/eventmachine/eventmachine/EventMachine.defer"target="_blank" rel="noopener noreferrer">Defer</a>
+成为可能，Defer会在在线程池中拿一个单独的线程来执行代码，然而它仍然有可能导致我们之前讨论过的多线程的问题。</li>
+<li>由于有太多的错误情况需要处理和多重回调的存在，使用这种方式开发复杂的系统是很困难的。回调地狱也是有可能发生在Ruby中的，但是可以通过Fiber来避免，下面我们会讨论到。</li>
+<li>EM 本身就是一个巨大的依赖库: 17K 行Ruby代码加上10K行C++代码</li>
+</ul>
+<h2 id="开源实例-2">开源实例</h2>
+<ul>
+<li><a href="https://github.com/postrank-labs/goliath/"target="_blank" rel="noopener noreferrer">Goliath</a>
+ &ndash; 单线程异步服务器</li>
+<li><a href="https://github.com/ruby-amqp/amqp"target="_blank" rel="noopener noreferrer">AMQP</a>
+ &ndash; RabbitMQ 的客户端，然而这个gem的作者推荐使用不基于EM的版本：<a href="http://rubybunny.info/"target="_blank" rel="noopener noreferrer">Bunny</a>
+, 需要注意的是，现在都倾向于将工具迁移至尽量少的使用EM的实现方式上。例如：<a href="https://github.com/rails/rails/tree/master/actioncable"target="_blank" rel="noopener noreferrer">ActionCable</a>
+ 的作者决定使用更底层的<a href="https://github.com/socketry/nio4r"target="_blank" rel="noopener noreferrer">nio4r</a>
+，<a href="https://github.com/kyledrake/sinatra-synchrony"target="_blank" rel="noopener noreferrer">sinatra-synchrony</a>
+的作者使用<a href="https://github.com/celluloid/celluloid"target="_blank" rel="noopener noreferrer">Celluloid</a>
+将其重写了一遍；等等</li>
+</ul>
+<h1 id="fibers">Fibers</h1>
+<p><a href="https://ruby-doc.org/core-2.4.1/Fiber.html"target="_blank" rel="noopener noreferrer">Fibers</a>
+是Ruby中一种用来实现轻量级协同并发操作的原语，它包含在Ruby标准库中，它可以手动的暂停、恢复和安排执行（scheduled），如果你对Javascrip 比较熟悉的话，它有点像ES6中的Generators(我们有一篇文章介绍<a href="https://engineering.universe.com/what-is-redux-saga-c1252fc2f4d1"target="_blank" rel="noopener noreferrer">Generator and Redux-Saga</a>
+),可以在一个线程内运行数以万计的Fibers。
+通常情况下，我们将Fibers配合EM使用来避免使用回调并且使代码看上去是同步运行的。所以以下代码：</p>
+<div class="highlight"><pre class="chroma"><code class="language-Ruby" data-lang="Ruby"><span class="no">EventMachine</span><span class="o">.</span><span class="n">run</span> <span class="k">do</span>
+  <span class="n">page</span> <span class="o">=</span> <span class="no">EM</span><span class="o">::</span><span class="no">HttpRequest</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;https://google.ca/&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
+  <span class="n">page</span><span class="o">.</span><span class="n">errback</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s2">&#34;Google is down&#34;</span> <span class="p">}</span>
+  <span class="n">page</span><span class="o">.</span><span class="n">callback</span> <span class="p">{</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://google.ca/search?q=universe.com&#39;</span>
+    <span class="n">about</span> <span class="o">=</span> <span class="no">EM</span><span class="o">::</span><span class="no">HttpRequest</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
+    <span class="n">about</span><span class="o">.</span><span class="n">errback</span>  <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+    <span class="n">about</span><span class="o">.</span><span class="n">callback</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre></div><p>可以被重写成：</p>
+<div class="highlight"><pre class="chroma"><code class="language-Ruby" data-lang="Ruby"><span class="no">EventMachine</span><span class="o">.</span><span class="n">run</span> <span class="k">do</span>
+<span class="no">Fiber</span><span class="o">.</span><span class="n">new</span> <span class="p">{</span>
+  <span class="n">page</span> <span class="o">=</span> <span class="n">http_get</span><span class="p">(</span><span class="s1">&#39;http://www.google.com/&#39;</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">page</span><span class="o">.</span><span class="n">response_header</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="n">about</span> <span class="o">=</span> <span class="n">http_get</span><span class="p">(</span><span class="s1">&#39;https://google.ca/search?q=universe.com&#39;</span><span class="p">)</span>
+    <span class="c1"># ...</span>
+  <span class="k">else</span>
+    <span class="nb">puts</span> <span class="s2">&#34;Google is down&#34;</span>
+  <span class="k">end</span>
+<span class="p">}</span><span class="o">.</span><span class="n">resume</span>
+<span class="k">end</span>
+<span class="k">def</span> <span class="nf">http_get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="n">current_fiber</span> <span class="o">=</span> <span class="no">Fiber</span><span class="o">.</span><span class="n">current</span>
+<span class="n">http</span> <span class="o">=</span> <span class="no">EM</span><span class="o">::</span><span class="no">HttpRequest</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
+<span class="n">http</span><span class="o">.</span><span class="n">callback</span> <span class="p">{</span> <span class="n">current_fiber</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="n">http</span><span class="p">)</span> <span class="p">}</span>
+<span class="n">http</span><span class="o">.</span><span class="n">errback</span>  <span class="p">{</span> <span class="n">current_fiber</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="n">http</span><span class="p">)</span> <span class="p">}</span>
+<span class="no">Fiber</span><span class="o">.</span><span class="n">yield</span>
+<span class="k">end</span>
+</code></pre></div><p>根本上说，<code>Fiber#yield</code> 会把控制权交还到调用者，并且返回最后一个传入 <code>Fiber#resume</code> 的参数。</p>
+<h2 id="优势-3">优势</h2>
+<ul>
+<li>Fibers 允许你通过重新排布嵌套回调的方式来精简你的异步代码</li>
+</ul>
+<h2 id="劣势-3">劣势</h2>
+<ul>
+<li>Fibers 并没有真正的解决并发问题</li>
+<li>在应用层面上很少使用</li>
+</ul>
+<h2 id="开源实例-3">开源实例</h2>
+<ul>
+<li><a href="https://github.com/igrigorik/em-synchrony"target="_blank" rel="noopener noreferrer">em-synchrony</a>
+ 一个库，由Google的一位性能工程师（a performance engineer）Ilya Grigorik开发，在不同客户端上将Fibers集成进EM，支持的客户端有：MySql2，Mongo，Memcached等等。</li>
+</ul>
+<h1 id="结论">结论</h1>
+<p>并发问题没有银弹，你需要权衡你的需求来选择一个合适的并发模型。举个例子来说，如果在资源足够的情况下需要运行一些CPU和内存密集型的代码&ndash;请使用进程。需要响应像HTTP请求这样的I/O操作的话&ndash;使用线程。对最大吞吐量有比较高要求的话&ndash;使用EventMachine。
+在这一系列文章的第二部分，我们将会讨论像Actors（Erlang，Scala）、Communication Sequential Processes（Go，Crystal）、Software Transactional Memory（Clojure）、Guilds（也许会在Ruby3实现的一种并发模型）等并发模型，敬请期待。</p>
+</article><section class="article labels"><a class="category" href=/categories/ruby/>Ruby</a><a class="tag" href=/tags/ruby/>Ruby</a><a class="tag" href=/tags/concurrency/>concurrency</a></section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/introduction_to_concurrency_models_with_ruby_part_ii/"><span class="iconfont icon-article"></span>Ruby 并发模型介绍 第二部分 [译]</a></p><p><a class="link" href="/posts/practical_vim_4/"><span class="iconfont icon-article"></span>«Practical Vim» 4</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

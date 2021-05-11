@@ -1,0 +1,27 @@
+version: 2
+updates:
+- package-ecosystem: docker
+  directory: "/support/dev"
+  schedule:
+    interval: daily
+    time: "21:00"
+  open-pull-requests-limit: 10
+  target-branch: master
+  ignore:
+  - dependency-name: alpine
+    versions:
+    - 3.13.0
+    - 3.13.1
+    - 3.13.3
+- package-ecosystem: gitsubmodule
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "21:00"
+  open-pull-requests-limit: 10
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "21:00"
+  open-pull-requests-limit: 10

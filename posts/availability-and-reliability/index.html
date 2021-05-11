@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>Availability 与 Reliability 又有何异同?&nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Availability 与 Reliability 又有何异同?" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">Availability 与 Reliability 又有何异同?</h1><p class="article date">Sunday, February 9, 2020</p></section><article class="article markdown-body"><p>上篇文章我们理清楚了Durability 和 Availability的含义, 但是我们也经常听说Reliability 这个词, 很多同学在Reliability 和Availability 之间又有点模模糊糊的, 粗一理解上去, Reliability 和 Availability 好像是一个意思啊? 那么接下来, 我们就来看看Availability 和 Reliability 有什么异同.</p>
+<p>在上篇文章中, 我们知道了Availability 是指一个系统在一个时间段中, 有多长时间是可用的. 它的计算公式如下所示:</p>
+<p>可用性 = (总运行时间 - 总宕机时间) / 总运行时间</p>
+<p>我们可以想见, 在现实生活中, 仅仅是用可用性的指标去衡量一个IT 系统是远远不够的.</p>
+<p>举个例子: 有一个系统每小时奔溃1ms, 那么这个系统的可用性是99.9999722%, 我们能说这个系统是靠谱的吗? 是可靠的吗? 当然是不能的!</p>
+<p>这个时候我们就应该来看看可靠性(Reliability)的概念了.</p>
+<h2 id="reliability">Reliability</h2>
+<p>可靠性指的是系统在多变/不可预测的现实环境下能保持无故障持续运行的可能性. 这里的无故障和持续运行是理解的重点.</p>
+<p>我们通常用平均故障间隔时间(Mean Time Between Failures)来衡量一个系统的可靠性:</p>
+<p>MTBF = sum(故障发生的时间点 - 上次故障修护的时间点)/ 故障的总次数</p>
+<p>回到上面的例子, 一个系统每小时宕机1ms, 那么这个系统的可用性是99.9999722%, 但是他的可靠性不高.</p>
+<p>如果一个系统从来不崩溃, 但是每年要停机两周, 那它的可用性只有96% 但是他的可靠性却比上一个系统要高不少.</p>
+<p>可用性(Availability) 主要衡量的是系统总宕机时间占总运行时间的比例,</p>
+<p>而可靠性(Reliability)主要衡量的是系统宕机的频率.</p>
+<p>想要提高可用性, 需要提高从故障中恢复的能力, 如果每次都能够尽可能快的从故障中恢复, 总的故障时间就不会太长,可用性也就相对应的高.</p>
+<p>想要提高可靠性, 需要提高容错的能力, 尽可能的防止系统进入故障状态中, 系统能够更长久无故障的运行, 可靠性指标也相应升高.</p>
+<p>如有理解偏差, 还望不吝斧正.</p>
+</article><section class="article labels"><a class="category" href=/categories/aws-sap/>AWS SAP</a></section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/aws-authentication-and-authorization-overview/"><span class="iconfont icon-article"></span>一个AWS资源访问请求的历程(一) </a></p><p><a class="link" href="/posts/durability-and-availability/"><span class="iconfont icon-article"></span>Durability 和 Availability</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

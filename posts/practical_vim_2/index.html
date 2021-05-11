@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>«Practical Vim» 2&nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="«Practical Vim» 2" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">«Practical Vim» 2</h1><p class="article date">Sunday, October 11, 2015</p></section><article class="article markdown-body"><h2 id="跳转到当前行的某个字符上">跳转到当前行的某个字符上</h2>
+<ul>
+<li><code>f{char}</code>,向右跳转到特定的字符{char}上.</li>
+<li><code>F{char}</code>,向左跳转到特定的字符{char}上.</li>
+<li><code>;</code>,正向跳转.</li>
+<li><code>,</code>,反向跳转.</li>
+</ul>
+<h2 id="可视模式的几个小技巧">可视模式的几个小技巧</h2>
+<ul>
+<li><code>gv</code>,重选上次的高亮区域.(如果上次被选中的行被删除了,那执行<code>gv</code>以后可能就不是你想要的结果了)</li>
+<li>在可视模式下切换选区的活动端可以使用<code>o</code>.光标会从选中区域的一端跳到另一端.</li>
+</ul>
+<h2 id="命令行模式">命令行模式</h2>
+<p>{% blockquote The Old Testament of Unix %}
+在洪荒时期,先出现了ed,ed是ex之父,ex为vi之父,而vi是vim之父
+{% endblockquote %}
+出于历史原因，在命令行模式下执行的命令都叫做Ex命令，我们可以使用Ex命令读写文件（:edit &amp; :write),创建新的标签（:tabnew），分割窗口（:split)，操作参数列表（:prev/:next)，操作缓存区列表（:bprev/:bnext)等等，事实上，vim为几乎所有功能添加了相应的Ex命令（参见:h ex-cmd-index)
+操作缓存区文本的Ex命令：</p>
+<table>
+<thead>
+<tr>
+<th align="left">命令</th>
+<th align="left">用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">:[range]delete [x]</td>
+<td align="left">删除指定范围内的行[到x寄存器中]</td>
+</tr>
+<tr>
+<td align="left">:[range]yank [x]</td>
+<td align="left">复制指定范围的行[到x寄存器中]</td>
+</tr>
+<tr>
+<td align="left">:[line]put [x]</td>
+<td align="left">在指定行后面粘帖寄存器x中的内容</td>
+</tr>
+<tr>
+<td align="left">:[range]copy {address}</td>
+<td align="left">把指定范围内的行拷贝到{address}所指定的行之下</td>
+</tr>
+<tr>
+<td align="left">:[range]move {address}</td>
+<td align="left">把指定范围内的行移动到{address}所指定的行之下</td>
+</tr>
+<tr>
+<td align="left">:[range]join</td>
+<td align="left">连接指定范围内的行</td>
+</tr>
+<tr>
+<td align="left">:[range]normal {commands}</td>
+<td align="left">对指定范围内的每一行执行普通模式命令{commands}</td>
+</tr>
+<tr>
+<td align="left">:[range]substitute/{pattern}/{string}/[flags]</td>
+<td align="left">把指定范围内出现[pattern]的地方替换成[string]</td>
+</tr>
+<tr>
+<td align="left">:[range]global/{pattern}/[cmd]</td>
+<td align="left">对指定范围内匹配{pattern}的所有行，在其上执行Ex命令{cmd}</td>
+</tr>
+<tr>
+<td align="left">[range]的定义:{start},{end} 其中start和end都是地址。<code>.</code>代表当前行的地址，<code>$</code>代表最后一行的地址，<code>%</code>代表所有行的地址，<code>'&lt;</code>代表高亮选区行首的位置标记，<code>'&gt;</code>代表高亮选区的最后一行（使用V选中一段文字后接着按下:,会在底栏出现<code>:'&lt;,'&gt;</code>，代表接下来的命令将会做用到高亮选区上。当然start和end也可以是数字，代表从start行到end行的范围。start和end同样可以是模式，比如<code>:/&lt;html&gt;/,/&lt;\/html&gt;/</code>表示从<code>&lt;html&gt;</code>到<code>&lt;/html&gt;</code>这个框框内。还可以对位置进行偏移：{address}±n，n可以是行号，位置标记，或者是一个查找模式。</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="使用t和m命令复制和移动行">使用<code>:t</code>和<code>:m</code>命令复制和移动行</h3>
+<p><code>:t</code>是<code>:copy</code>的缩写,挺怪异的，你可以理解成（copy To），其另一个缩写是<code>:co</code>
+用法<code>:[range]copy {address}</code>
+<code>:move</code>和<code>:copy</code>命令很相似，<code>:m</code>是move的简写。
+<code>:[range]:move {address}</code>
+tips:重复上条Ex命令只需要输入<code>@:</code>，在运行过一次<code>@:</code>以后就可以使用<code>@@</code>来重复它。</p>
+<h3 id="使用normal在指定行上运行普通模式的命令">使用<code>:normal</code>在指定行上运行普通模式的命令</h3>
+<p>比如你需要在整个文件的每一行加上分号，如果文件只有5行，如下</p>
+<pre><code>var foo = 1 
+var bar = 'a'
+var baz = 'z'
+var foobar = foo + bar
+var foobarbaz = foo + bar + baz
+</code></pre>
+<p>你可以用如下操作:<code>A;&lt;ESC&gt;</code>然后连续按4次<code>j.</code>,那么如果这个文件有100行呢？要按99次<code>j.</code>吗？对于影响范围广且距离远的操作你应该要想到Ex命令，而此时的normal就能解决这个问题：
+你可以使用：<code>A;&lt;ESC&gt;VG:normal .</code>或者更加简洁的版本：<code>:%normal A;</code></p>
+<h2 id="ex命令补全">Ex命令补全</h2>
+<p><code>&lt;C-d&gt;</code>命令会让Vim显示可用的命令列表。
+让vim的命令补全类似于Bash：</p>
+<pre><code>set wildmode=longest,list
+</code></pre>
+<p>让vim的命令补全模式类似于zsh：</p>
+<pre><code>set wildmemu
+set wildmode=full
+</code></pre>
+<p>我偏爱zsh的补全,上诉命令可以写入<code>~/.vimrc</code>也可以在命令模式下输入</p>
+<h2 id="把光标下的单词插入到命令行中">把光标下的单词插入到命令行中</h2>
+<p>进入命令行模式以后<code>&lt;C-r&gt;&lt;C-w&gt;</code>会复制光标下的单词并把它插入到命令行中。</p>
+<h2 id="命令行窗口">命令行窗口</h2>
+<p>输入<code>q:</code>会进入命令行窗口，其中保存了你的命令历史记录，你可以在里面编辑命令，使用<code>&lt;CR&gt;</code>执行该命令
+输入<code>q/</code>将会进入搜索命令窗口，其中保存了你的搜索记录同样可以在里面编辑和使用<code>&lt;CR&gt;</code>执行
+<code>&lt;C-f&gt;</code>会直接从命令行模式切换到命令行窗口</p>
+<h2 id="不退出vim的情况下运行系统命令">不退出vim的情况下运行系统命令</h2>
+<p><code>:!{cmd}</code>可以调用系统命令
+<code>:shell</code>可以开启一个shell，来运行系统命令，使用exit退出shell，回到vim
+<code>&lt;C-z&gt;</code>挂起当前vim进程，使用<code>fg</code>将vim放回到前台
+<code>:read !{cmd}</code>读取命令的标准输出到当前缓存中
+<code>:write !{cmd}</code>将当前缓存区的内容当作标准输入给{cmd}
+<code>[range]!{cmd}</code>将把[range]所指定的内容传给{cmd}做为标准输入，然后用{cmd}的标准输出替换掉[range]指定的内容.相当于一个过滤器</p>
+</article><section class="article labels"><a class="category" href=/categories/vim/>Vim</a><a class="tag" href=/tags/vim/>Vim</a></section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/git-patch/"><span class="iconfont icon-article"></span>Git补丁</a></p><p><a class="link" href="/posts/vim_register/"><span class="iconfont icon-article"></span>vim的寄存器</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>ShellScripts--数学计算&nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="ShellScripts--数学计算" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">ShellScripts--数学计算</h1><p class="article date">Saturday, August 8, 2015</p></section><article class="article markdown-body"><p>在shell Script中，有好几种进行数学运算的方法，虽然有几个效果差不多，在编写程序的时候使用一种方法就够了，但是我们可能还需要学习别人的程序啊，在阅读别人的程序的时候不能不认识这些东西吧。所以，留个笔记。</p>
+<h2 id="expr-命令-">expr 命令</h2>
+<p>expr 允许在命令行上处理数学表达式，但是略显拙劣。</p>
+<pre><code>    $ expr 1 + 5    #注意在表达式中要有空格，如果写成1+5那么结果就不是我们想要的了。
+</code></pre><p>expr命令能够识别一些不同的数学和字符串操作符：</p>
+<table>
+<thead>
+<tr>
+<th align="left">操作符</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">arg1\arg2</td>
+<td align="left">如果没有参数是NULL或者零，返回arg1;否则返回arg2</td>
+</tr>
+<tr>
+<td align="left">arg1 &amp; arg2</td>
+<td align="left">如果没有参数是null或者零，返回arg1 ， 否则返回0</td>
+</tr>
+<tr>
+<td align="left">arg1 &lt; arg2</td>
+<td align="left">如果arg1 小于 arg2 返回1 ，否则返回0;</td>
+</tr>
+<tr>
+<td align="left">arg1 &lt;= arg2</td>
+<td align="left">arg1 小于或者等于 arg2 返回1 ， 否则返回0</td>
+</tr>
+<tr>
+<td align="left">arg1 = arg2</td>
+<td align="left">arg1 等于arg2 返回1 ，否则返回0</td>
+</tr>
+<tr>
+<td align="left">arg1 != arg2</td>
+<td align="left">arg1 不等于arg2 返回1，否则返回0</td>
+</tr>
+<tr>
+<td align="left">arg1 &gt;= arg2</td>
+<td align="left">arg1 大于等于arg2 返回1，否则返回0</td>
+</tr>
+<tr>
+<td align="left">arg1 &gt; arg2</td>
+<td align="left">arg1 大于arg2 返回1 ， 否则返回0</td>
+</tr>
+<tr>
+<td align="left">arg1 + arg2</td>
+<td align="left">返回两参数算数和</td>
+</tr>
+<tr>
+<td align="left">arg1 - arg2</td>
+<td align="left">返回算数差</td>
+</tr>
+<tr>
+<td align="left">arg1 * arg2</td>
+<td align="left">返回算术乘积</td>
+</tr>
+<tr>
+<td align="left">arg1 / arg2</td>
+<td align="left">返回算术商</td>
+</tr>
+<tr>
+<td align="left">arg1 % arg2</td>
+<td align="left">返回两数相除的余数</td>
+</tr>
+<tr>
+<td align="left">string : regexp</td>
+<td align="left">如果regexp匹配到了string中的某个模式，则返回该模式</td>
+</tr>
+<tr>
+<td align="left">match string ：regexp</td>
+<td align="left">如果regexp匹配到了string中的某个模式，则返回该模式</td>
+</tr>
+<tr>
+<td align="left">substr STRING POS LENGTH</td>
+<td align="left">返回起始位置为POS 长度为LENGTH个字符的子串</td>
+</tr>
+<tr>
+<td align="left">index STRING CHARS</td>
+<td align="left">返回在STRING中找到的CHARS的位置，否则为0</td>
+</tr>
+<tr>
+<td align="left">length STRING</td>
+<td align="left">返回字符串STRING的长度</td>
+</tr>
+<tr>
+<td align="left">+ TOKEN</td>
+<td align="left">将TOKEN解释成字符串，即使是一个关键字</td>
+</tr>
+<tr>
+<td align="left">(EXPRESSION)</td>
+<td align="left">返回EXPRESSION的值</td>
+</tr>
+<tr>
+<td align="left"><code>以上\代表|</code>.注意：在使用expr命令时可能要使用&rsquo;'转义或者'&lsquo;转义</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<pre><code>	expr 2 * 5  # ==&gt; expr: 语法错误 
+	expr 2 \* 5  # 或者 expr 2 '*' 5 ==&gt;10
+</code></pre><h2 id="美元符号方括号">美元符号+方括号</h2>
+<p><code>$[OPERATION]</code></p>
+<pre><code>	var1=$[1+5]; # ==&gt; var1=6
+	var2=$[$var1*3]; #  ==&gt;  var2=18;
+</code></pre><p>这个比前面的要方便多了&hellip;
+缺点：只能进行整数运算,这是bash shell的原因，据说Z shell 支持浮点运算。我还没有验证过。</p>
+<h2 id="美元符号双括号">美元符号+双括号</h2>
+<p><code>$((OPERATION))</code>与$[]使用方法相同</p>
+<pre><code>	var=$((1+3)); # ==&gt; var=4
+</code></pre><h2 id="双括号">双括号</h2>
+<p><code>(( expression ))</code>双圆括号允许将高级数学表达式放入比较，也支持数学计算。这里的expression可以是任意的数学赋值或者比较表达式，能够是比较表达式，也就是说可以当作test命令使用，在if while for until 结构中都可以用作条件判别语句</p>
+<table>
+<thead>
+<tr>
+<th align="left">expression</th>
+<th align="left">meanning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">val++</td>
+<td align="left">（后）自增</td>
+</tr>
+<tr>
+<td align="left">val&ndash;</td>
+<td align="left">（后）自减</td>
+</tr>
+<tr>
+<td align="left">++val</td>
+<td align="left">（前）自增</td>
+</tr>
+<tr>
+<td align="left">&ndash;val</td>
+<td align="left">（前）自减</td>
+</tr>
+<tr>
+<td align="left">！</td>
+<td align="left">逻辑求反</td>
+</tr>
+<tr>
+<td align="left">~</td>
+<td align="left">位求反</td>
+</tr>
+<tr>
+<td align="left">**</td>
+<td align="left">幂运算</td>
+</tr>
+<tr>
+<td align="left">&laquo;</td>
+<td align="left">左移位</td>
+</tr>
+<tr>
+<td align="left">&raquo;</td>
+<td align="left">右移位</td>
+</tr>
+<tr>
+<td align="left">&amp;</td>
+<td align="left">位与</td>
+</tr>
+<tr>
+<td align="left">/</td>
+<td align="left">位或</td>
+</tr>
+<tr>
+<td align="left">&amp;&amp;</td>
+<td align="left">逻辑与</td>
+</tr>
+<tr>
+<td align="left">//</td>
+<td align="left">逻辑或</td>
+</tr>
+<tr>
+<td align="left"><code>以上/和//表示|和||</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<pre><code>	var1=10; ((var2=$var1**3)); # ==&gt;该句的意思是 var2=10*10*10=1000,(10的立方)
+	if (($var1**2&gt;90)) ; then echo &quot;ok&quot; ; fi  # ==&gt;当var1的平方大于90时输出 ok。
+</code></pre><p>这个东西很强大，而且在脚本中使用很直观，当见到(())时，我们就知道，这里出现了数值计算。</p>
+<h2 id="let-命令">let 命令</h2>
+<p>与(())类似;</p>
+<pre><code>	$ let &quot;$var+=1&quot;
+	$ let &quot;var=$var+1&quot;;
+</code></pre><h2 id="bc计算器大boss解决浮点运算的常用方案">bc计算器（大boss）解决浮点运算的常用方案</h2>
+<h3 id="在命令行使用bc">在命令行使用bc</h3>
+<p>bc 是我们学习linux时最先学习的几个命令。直接在命令行输入bc可以进入bc计算器的交互界面，可以在里面定义变量，计算表达式等操作。</p>
+<pre><code>	$ bc
+	&gt; 2+5
+	&gt; 7
+</code></pre><p>bc计算器的浮点运算由一个叫做scale的变量控制，实际上，scale的值就是小数点后的位数，而bc默认的scale=0,所以在计算的时候需要修改scale，比如scale=4，保留小数点后四位。</p>
+<pre><code>	$ bc
+	&gt; 3.44/5
+	&gt; 0
+	&gt; scale=4
+	&gt; 3.44/5
+	&gt; .6880
+</code></pre><p>使用-q参数可以将进入bc后输出的版权说明给屏蔽掉。使用quit退出bc</p>
+<pre><code>	$ bc
+	&gt; quit
+</code></pre><h3 id="在shellscripts中使用bc">在shellscripts中使用bc</h3>
+<p>bc可以接受标准输入，而这个标准输入我们可以通过管道或者重定向来提供给它。bc接受标准输入后，计算输入的表达式，输出到标准输出中，我们可以通过$(commamd)或者是`command`来获取它的输出。</p>
+<h4 id="用法一">用法一</h4>
+<pre><code>	variable=$( echo &quot;options; expression &quot; | bc) ;
+	
+	var=$(echo &quot;scale=4; 3.44/5;&quot; | bc) ; # ==&gt; var=.6880
+</code></pre><h4 id="用法二">用法二</h4>
+<p>使用内联(inline)输入重定向<strong>&laquo;</strong></p>
+<pre><code>	variable=$(bc &lt;&lt; EOF
+	          options;
+	          statements;
+	          expressions;
+	          EOF)
+
+	var=$(bc &lt;&lt; EOF
+	          scale=4;
+	          var1=20;
+	          var2=3.1415926;
+	          a1=($var1 * $var2);
+	          b1 = ($var1 / $var2);
+	          a1 + b1;
+	          EOF)
+</code></pre><p>常见用法就这么多，还有文件重定向等用法也是差不多的。</p>
+</article><section class="article labels"><a class="tag" href=/tags/shellscripts/>ShellScripts</a></section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/git-change_your_commit/"><span class="iconfont icon-article"></span>Git:更改你的提交</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>«Practical Vim» 1&nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="«Practical Vim» 1" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">«Practical Vim» 1</h1><p class="article date">Wednesday, October 7, 2015</p></section><article class="article markdown-body"><p>vim使用小技巧,鉴于大家都没有时间看长博文,我把它分成短文.</p>
+<h2 id="1-c-a-c-x对数字执行加减操作">1. <code>&lt;C-a&gt;</code> <code>&lt;C-x&gt;</code>对数字执行加减操作</h2>
+<ul>
+<li><code>[count]&lt;C-a&gt;</code>来使光标下的数字增加count</li>
+<li><code>[count]&lt;C-x&gt;</code>使光标下的数字减小count</li>
+</ul>
+<p>如果没有[count]，那么光标下的数字会逐一加减，再不济，光标没有在数字上也没关系，执行该命令后，会在当前行向后查找数字，并执行在第一个数字上。
+<em><strong>注意</strong></em>: 0开头的数字表示八进制，0x开头的数字代表十六进制，所以在07和0xa上执行<code>&lt;C-a&gt;</code>的结果分别为：010和0xb。</p>
+<h2 id="2-大小写反转">2. 大小写反转</h2>
+<ol>
+<li>选中一段字符，<code>u</code>,将所有字符变为小写。</li>
+<li>选中一段字符，<code>U</code>，将所有字符变为大写。
+<em><strong>注意</strong></em>*: 以上用法是在选中一段字符的基础上，不然将会执行<code>u</code>命令，撤销了上一步操作。</li>
+<li><code>g~</code>,反转大小写</li>
+<li><code>gu</code>,转换为小写,作用类似于1</li>
+<li><code>gU</code>,转换为大写,作用类似于2</li>
+</ol>
+<h2 id="3-显示tab缩进">3. 显示tab缩进</h2>
+<p>{% codeblock .vimrc %}
+set listchars=tab:.\<br>
+{% endcodeblock %}
+<em><strong>注意</strong></em>:最后有个空格
+<img  src="http://7xl4y6.com1.z0.glb.clouddn.com/imageVIM%e6%98%be%e7%a4%batab%e6%88%aa%e5%9b%be.png"
+        alt="显示tab缩进截图"/></p>
+<h2 id="4-调用两次操作符">4. 调用两次操作符</h2>
+<p>当一个操作符调用两次,将会作用于当前行,比如
+dd:剪切当前行
+cc:更改当前行
+&gt;&gt;:缩进当前行
+&laquo;:减小缩进当前行
+yy:复制当前行
+==:自动缩进一整行</p>
+<h2 id="5-在插入模式下更正错误">5. 在插入模式下更正错误</h2>
+<ul>
+<li><code>&lt;C-h&gt;</code>删除前一个字符,同<code>backspace</code></li>
+<li><code>&lt;C-w&gt;</code>删除前一个单词</li>
+<li><code>&lt;C-u&gt;</code>删除至行首</li>
+</ul>
+<h2 id="6-返回普通模式">6. 返回普通模式</h2>
+<p>除了<code>&lt;ESC&gt;</code>以外,还有几个方法可以从插入模式切换到普通模式</p>
+<ul>
+<li><code>&lt;C-[&gt;</code>切换到普通模式</li>
+<li><code>&lt;C-o&gt;</code>切换到插入-普通模式(从插入模式临时切换到普通模式一次)</li>
+</ul>
+<p>插入-普通模式:普通模式的一个特例,能让我们执行一次普通模式的命令,执行完毕后马上回到插入模式.</p>
+<h2 id="7-在插入模式中使用vim寄存器">7. 在插入模式中使用vim寄存器</h2>
+<ol>
+<li><code>&lt;C-r&gt;{register}</code>能将寄存器<code>{register}</code>中的内容插入到文本中. 有个问题就是如果你设置了<code>autoindent</code>或者<code>textwidth</code>那么插入进来的文本可能会有不必要的换行额外的缩进.</li>
+<li><code>&lt;C-r&gt;&lt;C-p&gt;{register}</code>这个命令更加智能,它会按照原意插入寄存器内的文本,并修正任何不必要的缩进.</li>
+</ol>
+<p>有关vim寄存器的介绍请移步到我的另外一篇<a href="/posts/vim_register/">博文</a>
+</p>
+<h2 id="8-在文章中使用非常用字符">8. 在文章中使用非常用字符</h2>
+<ul>
+<li>使用<code>&lt;C-v&gt;{code}</code>就能输入一个字符.比如输入字符&rsquo;a'可以使用<code>&lt;C-v&gt;065</code>,输入unicode字符需要在code前面加上一个字符&rsquo;u&rsquo;,比如要输入<code>&lt;C-v&gt;u00bf</code>能输入一个反转的问号<code>¿</code>,好玩吧:P</li>
+<li>想知道一个字符的编码,可以在该字符上输入<code>ga</code>,即可在状态看到该字符的编码.</li>
+<li><code>&lt;C-v&gt;&lt;nondigital&gt;</code>可以插入按键本身代表的字符,比如你开启了&rsquo;expandtab'选项,使用空格代替&rsquo;tab'键,那么使用<code>&lt;C-v&gt;&lt;Tab&gt;</code>将输出一个&rsquo;Tab&rsquo;,不管&rsquo;expandtab'是否开启.</li>
+<li>字符编码不太好记忆对不对?使用<code>&lt;C-k&gt;{char1}{char2}</code>能采用字符组合的方式来输入特殊字符,比如<code>&lt;C-k&gt;&lt;&lt;</code>就能输入书名号<code>«</code>,<code>&lt;C-k&gt;12</code>输入½,<code>&lt;C-k&gt;34</code>输入¾等等,更多的二合字母请参考vim文档:h digraghs-default</li>
+</ul>
+<h2 id="9-替换模式和虚拟替换模式">9. 替换模式和虚拟替换模式</h2>
+<p>众所周知,<code>R</code>和<code>r</code>是使vim进入替换模式,这个替换模式是替换实际的字符,比如一个&rsquo;tab'在文本显示中占据了8个空间,但是在文本中,它还是一个字符,在普通的替换模式中,使用<code>r</code>或者<code>R</code>替换&rsquo;tab'字符的时候将会一次替换掉&rsquo;tab'字符,而在文本显示上将会显示为一次替换了8个空格.
+vim还提供一个虚拟替换,使用<code>gr</code>或者<code>gR</code>进入,这个虚拟替换的不同之处是:替换是按照屏幕显示的实际字符数来替换的.比如一个&rsquo;tab'占据了8个空格,那么在替换的前面7个字符都将插入到&rsquo;tab'字符的前面,只有在替换掉第8个字符时,&lsquo;tab'字符才会被其取代.
+ps:&lsquo;tab'的宽度是可通过修改变量<code>tabstop</code>改变的.</p>
+</article><section class="article labels"><a class="category" href=/categories/vim/>Vim</a><a class="tag" href=/tags/vim/>Vim</a></section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/vim_register/"><span class="iconfont icon-article"></span>vim的寄存器</a></p><p><a class="link" href="/posts/error-while-loading-shared-libraries-xxxx-no-such-file-or-directory/"><span class="iconfont icon-article"></span>error:while loading shared libraries:xxxx no such file or directory</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

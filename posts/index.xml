@@ -1,0 +1,645 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on 94xychen&#39;s Blog</title>
+    <link>/posts/</link>
+    <description>Recent content in Posts on 94xychen&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <copyright>©2019 94xychen.</copyright>
+    <lastBuildDate>Sat, 24 Apr 2021 15:04:51 +0000</lastBuildDate>
+    
+        <atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>一个更好的broken link checker</title>
+      <link>/posts/check-broken-links-with-aws-cloudwatch-synthetic/</link>
+      <pubDate>Sat, 24 Apr 2021 15:04:51 +0000</pubDate>
+      
+      <guid>/posts/check-broken-links-with-aws-cloudwatch-synthetic/</guid>
+      <description>&lt;p&gt;大家可能曾经或多或少有过这样的困扰：在某些网页/Wiki上面，好不容易找到我们期望的信息以后，点进去发现404了，就会很影响使用者的体验。 而对于我们自己的页面来说，我们当然不想让我们自己的用户有这样的体验啦。&lt;/p&gt;
+&lt;h2 id=&#34;aws-提供的解决方案&#34;&gt;AWS 提供的解决方案&lt;/h2&gt;
+&lt;p&gt;基于这样的一种痛点，AWS提供了一个解决方案：基于CloudWatch Synthetics 的Broken Link check。&lt;/p&gt;
+&lt;p&gt;我们可以基于我们的需求使用&lt;code&gt;CloudWatch Synthetics&lt;/code&gt;创建一个 做Broken link check 的&lt;code&gt;Canary&lt;/code&gt;。
+更多关于如何使用CloudWatch Synthetics 创建Canary，请移步&lt;a href=&#34;https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries.html&#34;target=&#34;_blank&#34; rel=&#34;noopener noreferrer&#34;&gt;官方文档&lt;/a&gt;
+，我们这篇文章将更多的聚焦在我们修改过后的版本以及我们提供的一键部署的实现。&lt;/p&gt;
+&lt;h2 id=&#34;aws-的实现所存在的问题&#34;&gt;AWS 的实现所存在的问题&lt;/h2&gt;
+&lt;p&gt;AWS 已经提供了一个版本的实现，但是AWS 的实现并不能完全满足我们的要求：它通过爬取页面上的超链接，然后一层一层的爬取与扫描，而不在乎它当前扫描的页面到底还是不是我们期望它扫描的页面（停止条件是根据用户设置的一个depth 参数来判断到底需要扫描多少链接）。这种实现下，我们即使将这个depth 设置的再大也不能保证我们自己的页面会被完全扫描到。
+这样的话，既费钱，也没有满足我们的需求。&lt;/p&gt;
+&lt;h2 id=&#34;改进后的版本&#34;&gt;改进后的版本&lt;/h2&gt;
+&lt;p&gt;基于AWS 的实现，我在上面做了些许修改，让Broken Link Checker 能真正扫描所有在我们页面上引用的链接，不管是外部还是内部，但又不会深入非我们期望扫描的页面去扫描。
+实现在&lt;a href=&#34;https://github.com/ChenXiyu/broken-link-checker&#34;target=&#34;_blank&#34; rel=&#34;noopener noreferrer&#34;&gt;这里&lt;/a&gt;
+，使用方式请移步&lt;a href=&#34;https://github.com/ChenXiyu/broken-link-checker/blob/master/README.md&#34;target=&#34;_blank&#34; rel=&#34;noopener noreferrer&#34;&gt;Readme&lt;/a&gt;
+，有需要自取。&lt;/p&gt;
+&lt;p&gt;改进方式其实也很简单：在进一步扫描页面的子链接之前，先判断当前页面是不是和我们期望扫描的URL 在同一个domain 底下，只有在同一个domain 才继续深入爬取链接。
+这样我们就可以将Depth 设置得足够大，Canary 会在扫描完所有需要扫描的链接以及页面以后停下来。
+&lt;img  src=&#34;/images/check-broken-links-with-AWS-cloudwatch-synthetic/1.png&#34;
+        alt/&gt;&lt;/p&gt;
+&lt;h2 id=&#34;适用场景&#34;&gt;适用场景&lt;/h2&gt;
+&lt;p&gt;Broken link checker 有自身特有的适用性，并不适合所有网页应用。&lt;/p&gt;
+&lt;h3 id=&#34;不适用&#34;&gt;不适用&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;它不适合动态网页应用的扫描，&lt;/li&gt;
+&lt;li&gt;它不适用需要身份认证的页面的扫描
+像以上场景的扫描应该被冒烟测试或者端到端（E2E）测试所覆盖，而不是简单的链接扫描。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;适用于&#34;&gt;适用于&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;文档/Wiki 等静态页面。
+个人认为文档和Wiki 的使用场景是最需要它也是最能让它发挥作用的地方。&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Sign Your Work</title>
+      <link>/posts/sign-your-git-commit/</link>
+      <pubDate>Sun, 23 Feb 2020 05:54:46 +0000</pubDate>
+      
+      <guid>/posts/sign-your-git-commit/</guid>
+      <description>&lt;p&gt;最近在Github 上发现一个有意思的功能: 如果一个提交被作者签名了, 并且签名可被验证的话, 提交上会显示一个绿色的&lt;code&gt;Verified&lt;/code&gt;的标志.如下图所示:
+&lt;img  src=&#34;/images/sign-your-git-commit/1.png&#34;
+        alt/&gt;
+这篇文章, 我们就来聊聊为什么要签名你的提交以及如何去做.&lt;/p&gt;
+&lt;h2 id=&#34;什么是签名&#34;&gt;什么是签名?&lt;/h2&gt;
+&lt;p&gt;在真正的进入正文之前, 我想先简单的普及一下签名这个密码学的概念, 有些同学听到密码学这个词就觉得好复杂而心生畏惧, 其实大可不必, 如果只是应用的话, 你大可不需要了解每一个算法的细节, 你只需要知道他们的特点以及应用场景就完全足够了, 这里我就会以一个非常简化的模型来解释数字签名是如何实现的.&lt;/p&gt;
+&lt;p&gt;签名, 在字面意思上就是给某个东西署上名字, 而表明这个内容我们是同意的, 或者说, 这就是我写的. 在现实生活中, 我们常用的签名方式就是1)签字, 2)摁手印. 当我们通过这种方式来给一个东西签名以后, 别人就可以通过字迹以及指纹比对的方式来确认这个东西到底是不是我签署的.&lt;/p&gt;
+&lt;p&gt;而在现实生活中, 对签名的校验(字迹以及指纹比对)通常需要权威机构来做, 而在数字世界, 我们通常没有一个权威机构来帮我们校验某个东西是否真的是来自于某个人的, 于是, 采用密码学技术的签名就派上用场了. 在数字世界里, 数字签名的作用和现实生活中还是一模一样的, 只是我们实现的技术有不同而已.&lt;/p&gt;
+&lt;p&gt;下面我们就来看一下, 密码学工具如何做到的吧.
+首先, 我们先要从密码学工具箱中挑出几件工具出来, 在我接下来构想的简单模型中, 数字签名会用到的工具有两种: hash散列算法(数字世界的指纹), 非对称密码. 我们接下来看一下他们的特性, 具体的更多细节还请自行学习.&lt;/p&gt;
+&lt;h3 id=&#34;hash散列算法&#34;&gt;hash散列算法&lt;/h3&gt;
+&lt;p&gt;hash 散列算法可以将一个任意长度的内容转化成一个固定长度的内容,(不同的算法实现有不同的长度, 我们假设是64个字节), 我们称它为内容的指纹(finger print). 而且没有办法没有办法直接通过转换后的内容直接推算出原内容.&lt;/p&gt;
+&lt;p&gt;并且, hash算法都有雪崩效应, 也就是说, 即使是改动原内容的一个bit, 生成出来的指纹将会有很大的差别.
+用它, 我们可以校验内容的完整性.&lt;/p&gt;
+&lt;h3 id=&#34;非对称密码算法&#34;&gt;非对称密码算法&lt;/h3&gt;
+&lt;p&gt;想要了解非对称密码算法，我们必须先引入对称密码的概念。对称密码算法这个名称的由来就是因为使用该类型算法的信息发送方以及信息接收方都使用同样的密钥来对信息进行加密/解密处理。最简单的对称密码算法就是凯撒加密，它将信息原文中的单个信息单元（字母B）在字母表上平移一定的位数（比如3）后得到信息所对应的密文单元（B-&amp;gt;E）。
+&lt;img  src=&#34;/images/sign-your-git-commit/5.png&#34;
+        alt=&#34;加密方式&#34;/&gt;
+在上述凯撒密码的例子中，平移位数3就是密钥，密文的接受者只需要用3这个密钥对密文进行一下上述步骤的反向操作就能得到明文信息了。
+说句题外话，在现代密码学看来，这种加密方式实在是太脆弱了，但是，它不妨碍我们去理解与它类似的对称密码算法。
+回到对称密码算法上来，我们可以说，对称加密算法就是像凯撒密码这种加密和解密都是用相同的密钥的加密算法，只不过现代的加密算法有更复杂的处理逻辑以及更加严谨的数学方法做支撑。&lt;/p&gt;
+&lt;p&gt;相对于对称密码算法, 非对称密码算法的密钥有一对而不是一个.
+它的特性主要是: 用其中一个密钥加密的内容, 不能通过同一个密钥解密, 只能通过相对应的另一个密钥来解密, 反之亦然(当然, 不同的算法有不同的特性.).&lt;/p&gt;
+&lt;p&gt;于是, 我们可以将这一对密钥区分成公钥和私钥, 公钥直接放在互联网上, 而私钥自己保管好(这是关键, 私钥就代表你自己), 如果别人需要和你进行加密通信, 就可以直接用你的公钥加密, 而不需要像对称密码算法一样先和你交换密钥(当然, 这里又涉及到了公钥可行度的问题, 密码学通常通过证书来解决. 而且, 由于非对称密码算法的性能还是不如对称密码算法, 所以非对称密码在实际的加解密过程中通常扮演安全密钥交换通道的作用, 密码学有太多的东西可以讲, 以后有机会再说.).&lt;/p&gt;
+&lt;h3 id=&#34;简单的签名实现&#34;&gt;简单的签名实现&lt;/h3&gt;
+&lt;p&gt;&lt;img  src=&#34;/images/sign-your-git-commit/2.jpeg&#34;
+        alt/&gt;
+我们先有请密码学中的李雷和韩梅梅: Alice 和 Bob. 假设Alice 想给Bob 发一条消息说: &lt;code&gt;Hello Bob. Do you have time tonight?&lt;/code&gt;. 如果Bob 收到这条消息, 他怎么知道这条消息就是Alice 发的呢? 万一是Bob的情敌要骗他出来干仗呢? 于是, Alice 做了两件事:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;用hash散列算法计算出了这条消息的指纹: &lt;code&gt;c01228362b0b8f707c018fe24cca6ac179e2619d1fcfa47cdd19fa1235feb251&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;用自己的私钥给这条指纹加密: &lt;code&gt;ZmI3NmY3M2M4ZTQ3YmRlMGE3ZDI1ZGM2MjViOGUzNDg=&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;然后将加密后的指纹随同那条消息一同发送给了Bob.&lt;/p&gt;
+&lt;p&gt;那么Bob如何就能知道这条消息就是Alice 发出来的呢? Bob 只需要做这几件事:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;用Alice 的公钥解密指纹密码(非对称密码算法的特性), 得到: &lt;code&gt;c01228362b0b8f707c018fe24cca6ac179e2619d1fcfa47cdd19fa1235feb251&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;用于Alice 相同的hash 算法对Alice 发送过来的内容进行计算, 得到hash指: &lt;code&gt;c01228362b0b8f707c018fe24cca6ac179e2619d1fcfa47cdd19fa1235feb251&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;如果两者一样, 证明这条消息是Alice发出来的, 如果不是, 要么内容被篡改, 要么不是Alice 发出来的.&lt;/p&gt;
+&lt;p&gt;这样, 一个简易的签名和验证就完成了, 本质上, 签名的验证就是验证发布者是否持有某个私钥, 这个私钥就代表你自己, 所以私钥的保管至关重要!&lt;/p&gt;
+&lt;h2 id=&#34;为什么要给commit-签名&#34;&gt;为什么要给Commit 签名?&lt;/h2&gt;
+&lt;p&gt;在了解了签名的作用以后, 我相信给git Commit签名的原因就已经很明了了: 别人可以验证这个commit 真的是你提交的, 而不是:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;某个盗用了你的Access token的人去提交的.&lt;/li&gt;
+&lt;li&gt;某个盗用了你Github/Github enterprise账号的人去提交的.&lt;/li&gt;
+&lt;li&gt;某个同事改了你的代码, 并且 &lt;code&gt;--amend&lt;/code&gt; 了你的提交, 并且&lt;code&gt;force push&lt;/code&gt;了你的分支(强烈不建议这么做, 因为可能有生命危险)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;总而言之, 给Commit 签名, 可以让别人验证所有的这个工作, 来自于一个可信可验证的来源.&lt;/p&gt;
+&lt;h2 id=&#34;如何给commit-签名&#34;&gt;如何给Commit 签名?&lt;/h2&gt;
+&lt;p&gt;有两种方式可以给你的Commit 签名:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;在Github 上面编辑的代码, Github会自动的签名(由此可推测, Github 给每个用户都生成了一个公私钥对, 而且还没有给我们暴露出来)&lt;/li&gt;
+&lt;li&gt;在自己的机器上用Git 在提交时进行签名, 并且让Github 可验证.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;第一种方式不需要解释, 我们看一下第二种方式如何操作:&lt;/p&gt;
+&lt;h3 id=&#34;工具准备&#34;&gt;工具准备&lt;/h3&gt;
+&lt;p&gt;首先我们需要有一个自己的非对称密钥对. 我们这里使用gpg 这个工具来生成和管理我们的密钥对.(gpg 是GNU Privacy Guard的缩写, 是常用的加密/解密/签名/校验等密码学操作的命令行工具, 更多详情以后介绍.)&lt;/p&gt;
+&lt;p&gt;安装GPG:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;brew install gnupg
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;安装完以后, 我们需要写一个配置到我们的shell 配置中, 不然的话, gpg 不能正常的弹出密码询问框而报错:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;export GPG_TTY=$(tty)&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt; ~/.your_shell_config &lt;span class=&#34;c1&#34;&gt;# For bash/zsh user. config are usually .bashrc/.zshrc&lt;/span&gt;
+&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;set -x GPG_TTY (tty)&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt; ~/.config/fish//config.fish &lt;span class=&#34;c1&#34;&gt;# For fish user&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;生成密钥对&#34;&gt;生成密钥对&lt;/h3&gt;
+&lt;p&gt;安装好gpg以后, 用gpg 生成密钥对.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;gpg --full-generate-key
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它会弹出一系列问题让你输入, 如实写入就好啦.&lt;/p&gt;
+&lt;p&gt;生成完了以后, 你就可以用如下命令查看你的密钥了:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;gpg --list-secret-keys --keyid-format LONG
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;输出类似于:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;➜  ~ gpg --list-secret-keys --keyid-format LONG
+/Users/xiyuchen/.gnupg/pubring.kbx
+----------------------------------
+sec   rsa4096/507BB1CAC6286AF9 2020-02-16 [SC]
+      1888037BDEAA06CFDE3117FE507BB1CAC6286AF9
+uid                 [ultimate] ninety-four-xychen &amp;lt;94xychen@gmail.com&amp;gt;
+ssb   rsa4096/F73836ED174C17A7 2020-02-16 [E]
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;至于如何更好的管理你的公私钥(备份和导入等)以后有机会在专题介绍.&lt;/p&gt;
+&lt;h3 id=&#34;签名你的提交&#34;&gt;签名你的提交.&lt;/h3&gt;
+&lt;p&gt;git commit 命令给我们提供了利用gpg来签名commit的选项: &lt;code&gt;-S[&amp;lt;keyid&amp;gt;], --gpg-sign[=&amp;lt;keyid&amp;gt;]&lt;/code&gt;, 我们可以在写提交代码的时候加上&lt;code&gt;-S&amp;lt;keyid&amp;gt;&lt;/code&gt; 来签名你的提交:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;git commit -S507BB1CAC6286AF9 -m &#39;commit message&#39;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;到这一步, git签名就已经完成了, 但是, 每个提交都要写-S 加 keyid 还是有些麻烦的, 我们通过修改git 的配置(配置哪个层级自己选择, 我选择的是全局)来让git自动签名每一个提交:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;$ git config --global user.signingkey 507BB1CAC6286AF9
+$ git config --global commit.gpgsign &lt;span class=&#34;nb&#34;&gt;true&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;让github可验证&#34;&gt;让Github可验证&lt;/h3&gt;
+&lt;p&gt;到这一步, 如果我们直接将提交推送到Github上, 提交上将会出现一个&lt;code&gt;Unverified&lt;/code&gt;的标签, 这是因为, 虽然我们给提交签名了, 但是, Github还是不知道这个签名到底来自于谁. 接下来, 我们就要告诉Github: 我们这个用户所对于的公钥是哪个.&lt;/p&gt;
+&lt;p&gt;这样, Github 用这个公钥校验完提交以后, 就可以说, 这个提交就是这个用户提交的了.&lt;/p&gt;
+&lt;p&gt;首先, 我们要导出我们的公钥:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-Bash&#34; data-lang=&#34;Bash&#34;&gt;gpg --export -a &amp;lt;keyid&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;输出类似:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mQINBF5I7cwBEACxmyzZXpE8ldOqSV+RwPW3FyEj2pPY46kMbWHdbyGlm4Q2phUv
+ZSYwxQTj8+MncpPQi3LUjH+VDpq9dwPzlKRVqiBrXZ4z1vjQV3YBk9cwloASLDCW
+.....
+X0KKdfAF6kIwIWe1jFXg76rNKly/PMj0E1kuUfTe7hHJWa/II8cloEhWSmSiuVum
+do90
+=syTd
+-----END PGP PUBLIC KEY BLOCK-----
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;在Github 的这个页面将public key的内容上传上去:
+&lt;img  src=&#34;/images/sign-your-git-commit/3.png&#34;
+        alt/&gt;&lt;/p&gt;
+&lt;p&gt;恭喜你, 到这里, 你的提交就是&lt;code&gt;Verified&lt;/code&gt;了.
+你就可以像我一样帅气的拥有全Verified 提交记录了, ( •́ὤ•̀)你酸了没?.
+&lt;img  src=&#34;/images/sign-your-git-commit/4.png&#34;
+        alt/&gt;&lt;/p&gt;
+&lt;h2 id=&#34;advanced-tips&#34;&gt;Advanced Tips&lt;/h2&gt;
+&lt;h3 id=&#34;在本地查看签名&#34;&gt;在本地查看签名&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git log --show-signature
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;输出类似于:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;commit e412a1f98b4ddc34590d7f773c5c09c5326ca62c (HEAD -&amp;gt; master)
+gpg: Signature made Sun Feb 23 16:54:34 2020 CST
+gpg:                using RSA key 1888037BDEAA06CFDE3117FE507BB1CAC6286AF9
+gpg: Good signature from &amp;quot;ninety-four-xychen &amp;lt;94xychen@gmail.com&amp;gt;&amp;quot; [ultimate]
+Author: ninety-four-xychen &amp;lt;94xychen@gmail.com&amp;gt;
+Date:   Sun Feb 23 15:56:31 2020 +0800
+
+    add new post: sign-your-git-commit
+
+commit 87e8443f9880feb3d56d0bf62ed171b6c0e2d10f
+gpg: Signature made Sun Feb 23 13:54:04 2020 CST
+gpg:                using RSA key 1888037BDEAA06CFDE3117FE507BB1CAC6286AF9
+gpg: Good signature from &amp;quot;ninety-four-xychen &amp;lt;94xychen@gmail.com&amp;gt;&amp;quot; [ultimate]
+Author: ninety-four-xychen &amp;lt;94xychen@gmail.com&amp;gt;
+Date:   Sun Feb 23 13:54:04 2020 +0800
+
+    Discards building step on pipeline.
+
+commit f182369d56f5fc8506ea843b9e1ae25fd552a60b (origin/master)
+gpg: Signature made Wed Feb 19 22:46:44 2020 CST
+gpg:                using RSA key 1888037BDEAA06CFDE3117FE507BB1CAC6286AF9
+gpg: Good signature from &amp;quot;ninety-four-xychen &amp;lt;94xychen@gmail.com&amp;gt;&amp;quot; [ultimate]
+Author: ninety-four-xychen &amp;lt;94xychen@gmail.com&amp;gt;
+Date:   Wed Feb 19 22:46:44 2020 +0800
+
+    Fixed an appearance issue on landing page.
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;缓存密码&#34;&gt;缓存密码&lt;/h3&gt;
+&lt;p&gt;熟话说, 安全与便利不可兼得, 在这种情况下也不例外,&lt;/p&gt;
+&lt;p&gt;当我们配置完上面的一切以后. 提交的时候, gpg 总会弹出一个密码询问框, 让你输入你创建密钥对时使用的密码, 去解开加密保存的私钥, 从而使用私钥去签名.&lt;/p&gt;
+&lt;p&gt;如果你用了像1password这样的密码管理工具的话, 你还可以很便利的用快捷键调出密码管理界面, 找到你的私钥解密密码, 复制粘贴.&lt;/p&gt;
+&lt;p&gt;但是, 如果你没有用这种方式, 每次提交还要去输入密码还是挺痛苦的, 不然的话很多人就会设置一个弱密码&amp;hellip;这里还是强烈建议用密码管理工具生成强密码, 并且管理密码的.&lt;/p&gt;
+&lt;p&gt;在设置了强密码的前提下, 我们可以稍微的牺牲一些安全性, 通过配置gpg-agent的 &lt;code&gt;default-cache-ttl&lt;/code&gt;, 让我们解密后的私钥在内存中存在的时间稍微长一些(默认10分钟), 比如, 一天:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# ~/.gnupg/gpg-agent.conf
+
+default-cache-ttl-ssh 86400
+max-cache-ttl-ssh 86400
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;安全性和便利性永远是站在对立面上, 就像是鱼与熊掌, 不可兼得.
+但是, 有时候保留98分的安全, 妥协另外两分来换取一定便利性也不是不接受, 当然, 具体情况还得具体分析.&lt;/p&gt;
+&lt;h2 id=&#34;结语&#34;&gt;结语&lt;/h2&gt;
+&lt;p&gt;到目前为止, 我们介绍了简单的密码学知识以及密码学家工具箱中常用的几种工具, 并且将它们实际运用在我们的工作中来保护我们的手工艺品(handcrafts).
+作为工具的使用者, 我们会发现, 其实实用的密码学并不是很难理解, 就算是我们不是以密码学作为主要研究学科的麻瓜, 也能运用密码学工具来保护我们的资产(范资产).&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>localhost(127.0.0.1) 和 0.0.0.0 有什么异同?</title>
+      <link>/posts/whats-difference-between-localhost-and-0-0-0-0/</link>
+      <pubDate>Sun, 16 Feb 2020 13:37:20 +0000</pubDate>
+      
+      <guid>/posts/whats-difference-between-localhost-and-0-0-0-0/</guid>
+      <description>&lt;p&gt;可能大家遇到过一些问题, 比如:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;我的框架将服务默认监听在127.0.0.1上, 为什么我在container 外面死活访问不到服务?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;而我们大多数人都听过127.0.0.1 和 0.0.0.0, 但是可能大多数人都没有在这个上面仔细的考虑过, 如果它们都指向同一个地方, 那么它们到底有什么不同呢? 上面的问题, 又应该如何解决呢? 请听我慢慢道来.&lt;/p&gt;
+&lt;h2 id=&#34;127001&#34;&gt;127.0.0.1?&lt;/h2&gt;
+&lt;p&gt;127.0.0.1 回环(Loopback)IP地址(它也叫localhost), 回环地址是用来建立到&lt;em&gt;本机&lt;/em&gt;的IP连接.&lt;/p&gt;
+&lt;p&gt;在IPv6协议中, &lt;code&gt;::1&lt;/code&gt; 起着相同的作用. 虽然使用127.0.0.1 是一个比较常见的实践, 实际上, 使用&lt;code&gt;127.*.*.*&lt;/code&gt; 中的任何一个地址都有相同的作用, 这是因为整个127地址段都是分配给了回环功能. 所有发给127网段的数据包都应该在机器内部回环, 而不会出现在现实的网络中.&lt;/p&gt;
+&lt;p&gt;这个地址段一般是用来做IP/TCP 以及高层协议的测试用的. 正常来说, 向外发送的数据会在网络栈上从上往下逐层打包, 而如果用回环地址, 那么数据包在IP层立马往回走发向本机, 而不会走向更下层的层次,比如数据链路层. 所以如果只是想测试IP/TCP 以及更高层的协议, 用回环地址就是一个非常好的选择, 因为用回环地址屏蔽了底层协议的协议. 而在这个家族里面 127.0.0.1 是最常用的测试地址.&lt;/p&gt;
+&lt;h2 id=&#34;0000&#34;&gt;0.0.0.0?&lt;/h2&gt;
+&lt;p&gt;首先要说明的是, 0.0.0.0 在格式上是一个合法的IP 地址, 所以它可以被正确解析成正确的值. 它是合法的, 实际上, 它也是有正式意义的, 它的意义是: “没有确定地址的占位符(the ‘no particular address’ placeholder)”. 非常的虚对不对? 它具体代表的意义, 要决于下一步要做什么.&lt;/p&gt;
+&lt;p&gt;在路由的上下文中, 它通常指代默认的地址. 为什么呢? 在路由配置中, 我们使用CIDR block 来配置路由表(例如: 10.1.3.2/24 -&amp;gt; interface 1), 这种配置代表我们是通过网段来路由不同的数据包, 而0.0.0.0/0 可以代表最大的网段(地址全0, 且子网掩码为0), 所以所有的地址都能被它包括, 所以, 没有被路由表匹配上的网段就都流到它这里啦.&lt;/p&gt;
+&lt;p&gt;在服务的上下文中, 它代表所有绑定在本机上的IPv4地址.如果一个机器上绑定了两个IPv4地址(192.168.1.23 和 10.1.2.32), 而一个服务绑定在0.0.0.0上, 那么通过这两个IPv4地址都能访问到该服务.&lt;/p&gt;
+&lt;p&gt;0.0.0.0还有一个应用是在DHCP服务上. 在机器刚刚启动, 还没有IP地址正需要从DHCP获取时, 机器会使用0.0.0.0作为原地址在子网内广播DHCPDISCOVER请求.&lt;/p&gt;
+&lt;p&gt;好了, 到这里它们之间的区别就已经非常清楚了, 相信以后再遇到服务在外部访问不到时你又多了一条思路去排查问题了.&lt;/p&gt;
+&lt;p&gt;照旧, 如有理解偏差, 还望不吝斧正.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>AWS KMS 授权的“坑”</title>
+      <link>/posts/the-tricky-point-on-kms-authorization/</link>
+      <pubDate>Sun, 09 Feb 2020 14:00:50 +0800</pubDate>
+      
+      <guid>/posts/the-tricky-point-on-kms-authorization/</guid>
+      <description>&lt;p&gt;前面两篇文章中介绍了AWS 中的授权模式, 大概概括下来就是:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;能够真正提供授权只有Identity Based policy 和 Resource-based policy.&lt;/li&gt;
+&lt;li&gt;Org SCPs、Permission boundary、session policy 都是用于限定范围的, 不能真正的授权操作.&lt;/li&gt;
+&lt;li&gt;Org SCPs 是同时作用于I-B 和 R-B 的. 而permission boundary 和 session policy 只能作用于I-B.&lt;/li&gt;
+&lt;li&gt;在Org SCPs 不存在或者允许的情况下, 只要Resource-based policy 授权了请求, 那么请求就授权了, 不然就得去看Identity-Based policy.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;要注意的是, 这些是在AWS授权中一些通用的原则, 但是, 有些resource 是一些特例, 比如AWS KMS 的授权就不能完全套用第四条, 它有自己的一些小特性. 而且, 针对KMS CMK 的授权, 除了有Identity Based policy 和 Resource-Based policy 以外, 还有一个KMS Grant 可以用来授权, 这个我们会在最后介绍.&lt;/p&gt;
+&lt;p&gt;接下来我们就来看看AWS KMS 的授权逻辑是什么样的吧.&lt;/p&gt;
+&lt;p&gt;我们可以通过以下几种方式来控制KMS 的访问:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;使用Key policy(Resource-Based Policy)&lt;/li&gt;
+&lt;li&gt;在KMS CMK的授权中, Key Policy 是必要的, 我们可以只使用Key Policy 来进行授权, 这就意味着我们的授权的范围完整的定义在Key Policy 中, 而不像其他的资源分散在多个地方(Identity-Based Policy)&lt;/li&gt;
+&lt;li&gt;组合使用Key Policy 和 Identity-Based Policy
+先要说明的是, 我们不能仅仅只用Identity-Based Policy 来对KMS CMK 授权, 这是KMS 授权中非常特别的一个点, 像上面说到的, Key Policy 是必要的. 使用这种组合的方式来授权KMS的访问, 意味着你允许通过Identity-Based Policy的方式来授权访问, 那么如何允许呢? 我们需要在Key Policy中加上一个特殊的policy, 我们后文揭晓.&lt;/li&gt;
+&lt;li&gt;组合使用Key Policy 和 Grants
+和上一条组合使用的方式一致, Key Policy是必要的. 使用这种方式以为着我们允许有权限的实体(User、Role、Service)能够通过创建Grants将权限委托给其他的实体(User、Role、Service), 关于Grants 的介绍我们后文会有.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;到这里我们就能看出一个非常大的区别了, 对于大多数AWS 的Resource 来说, Identity-Based policy 是唯一的授权方式(因为大部分Resource 没有支持Resource-Based policy), 还有一小部分Resource 提供了Resource-Based Policy或其他的授权机制(像Grant)来补充Identity-Based Policy, 但对绝大多数Resource来说, 这些补充都不是必选的, 而在KMS 这里, 这是不成立的, Resource-Based policy 才是主角, 它才是必须的, 其他的才是备选的. 我们要么单独使用Resource-Based Policy 来完成授权, 要么组合Resource-Based Policy 和Identity-Based policy 或 grants 来使用.&lt;/p&gt;
+&lt;h2 id=&#34;key-policy&#34;&gt;Key Policy&lt;/h2&gt;
+&lt;p&gt;Key policy 本质就是Resource based policy, 所以对特定用户的授权还是一样的去理解. 如果我们在Key Policy 中写了授权某个特定用户某个权限, 那么有这一条授权就够了. 而关于如何写这些polcy 文档我们不会在这个文章中介绍, 可以参考这个文章.
+不一样的是, 前文说到了它在KMS授权中是个必要的部分, 它不是可选的.
+而在创建KMS CMK的时候AWS 可能会帮我们创建默认的Key Policy(除非使用CLI/SDK创建并且提供了Key Policy). 通过CLI/SDK 和AWS console 创建的默认Key Policy 有一些不同, 但是这些不是我们今天要讨论的点, 有兴趣的同学可以参考这个文章, 我们今天看看它为我们创建的相同部分, 来理解KMS 授权中与普通资源授权的不同点.
+我们要讨论的共同部分如下代码块所示:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+  &lt;span class=&#34;nt&#34;&gt;&amp;#34;Sid&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;Enable IAM User Permissions&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+  &lt;span class=&#34;nt&#34;&gt;&amp;#34;Effect&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;Allow&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+  &lt;span class=&#34;nt&#34;&gt;&amp;#34;Principal&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;nt&#34;&gt;&amp;#34;AWS&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;arn:aws:iam::111122223333:root&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;},&lt;/span&gt;
+  &lt;span class=&#34;nt&#34;&gt;&amp;#34;Action&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;kms:*&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;
+  &lt;span class=&#34;nt&#34;&gt;&amp;#34;Resource&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;*&amp;#34;&lt;/span&gt;
+&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;按照我们通常的理解: 哦, 这不就是授权该Account下所有请求嘛. 我以前就是这么理解的, 然后就掉坑里了&amp;hellip;
+正确的理解是:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;授权account的Root用户有权限管理该CMK&lt;/li&gt;
+&lt;li&gt;与其他资源不同的是, CMK 默认对Root 用户的访问是拒绝的, 所以如果不显式的给Root 用户赋予权限的话, Root 就没有权限管理该CMK, 而如果CMK 的拥有者被删除了的话, 那就只有发Ticket 给AWS 请求帮助了.&lt;/li&gt;
+&lt;li&gt;允许Identity-Based Policy 来授权该 AWS CMK (其实Sid里面已经写到了)&lt;/li&gt;
+&lt;li&gt;前面提到了 Identity-Based Policy是不能单独授权CMK的, 我们必须要Key Policy 来允许, 而这个操作就是这个允许.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以, 在看到KMS CMK 的Key Policy 中出现这个文档的时候不要再认为他是授权整个Account了.&lt;/p&gt;
+&lt;h2 id=&#34;identity-based-policy&#34;&gt;Identity-Based Policy&lt;/h2&gt;
+&lt;p&gt;在有了上节提到的Key Policy 以后, 我们就可以正常的使用Identity-Based Policy 来给IAM 实体来授权了.&lt;/p&gt;
+&lt;h2 id=&#34;grants&#34;&gt;Grants&lt;/h2&gt;
+&lt;p&gt;除了key policy 以外, AWS KMS 还支持 grant 这种授权方式, 简单的说就是有权限的人可以创建授权(令牌)来赋予其他人访问KMS的权限. 而这个令牌是可以被销毁的. 这个令牌只能用来授权, 不能用来拒绝某些权限.
+我们当然可以用Key policy 来完成所有的授权, 但是我们一般把Key Policy 中定义的权限考虑成“静态的“, 而我们一般视Grant为临时的、程序自动话的、更小粒度的授权.
+它的使用也非常的简单: 创建Grant 就可以了. 而创建Grant 所需要的参数和我们写Policy所要提供的参数非常相似, 比如说:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;$ aws kms create-grant &lt;span class=&#34;se&#34;&gt;\\&lt;/span&gt;
+    --key-id 1234abcd-12ab-34cd-56ef-1234567890ab &lt;span class=&#34;se&#34;&gt;\\&lt;/span&gt;
+    --grantee-principal arn:aws:iam::111122223333:user/exampleUser &lt;span class=&#34;se&#34;&gt;\\&lt;/span&gt;
+    --operations Decrypt &lt;span class=&#34;se&#34;&gt;\\&lt;/span&gt;
+    --retiring-principal arn:aws:iam::111122223333:role/adminRole &lt;span class=&#34;se&#34;&gt;\\&lt;/span&gt;
+    --constraints &lt;span class=&#34;nv&#34;&gt;EncryptionContextSubset&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;={&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;Department&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;IT&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;key-id 对应我们的Resource, grantee-principal 对应我们的 Principal, Operations 就是Actions, constraints 就是类似与Condition, retiring-principal 是指定那个用户可以调用API 来retire 这个grant, 这个是Policy 中没有的.&lt;/p&gt;
+&lt;h2 id=&#34;跨account-授权&#34;&gt;跨Account 授权&lt;/h2&gt;
+&lt;p&gt;跨Account 授权和其他资源还是一样的, 需要同时在Key policy 和Identity-based policy/grant 中赋予权限才能完成跨Account的授权.&lt;/p&gt;
+&lt;p&gt;理解了上面的点, 那就应该很容易理解AWS KMS 的权限评估流程了:
+&lt;img  src=&#34;/images/the-tricky-point-on-KMS-authorization/1.jpeg&#34;
+        alt/&gt;&lt;/p&gt;
+&lt;p&gt;照旧: 如有理解偏差, 还望不吝斧正&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>在EC2 上实现宿主与应用容器权限的分离(2 tiers role) </title>
+      <link>/posts/second-tier-role-on-ec2/</link>
+      <pubDate>Sun, 09 Feb 2020 13:54:40 +0800</pubDate>
+      
+      <guid>/posts/second-tier-role-on-ec2/</guid>
+      <description>&lt;p&gt;EC2 可以区分Execution role 和Task role嘛?
+Officially, NO. But…
+当然会有But, 对吧, 不然这篇文章要干嘛…&lt;/p&gt;
+&lt;p&gt;最近在项目上做了一个比较有意思的实验, 那就是在EC2的机器上实现2层Role 的机制: EC2机器用一个role, EC2上跑的容器用另外的一个role, 熟悉的朋友可能就会想, 那我在容器里面assume role不就好了吗? 其实这是一种解决方案, 但是这种方式有一些缺陷, 而我们实现了一种通过fake metadata service来实现的更加完善的方案. 且听我慢慢道来.&lt;/p&gt;
+&lt;h2 id=&#34;为什么会有这样的需求&#34;&gt;为什么会有这样的需求?&lt;/h2&gt;
+&lt;p&gt;我们项目在开发/维护一个跨account创建CI agent的平台, Ci的agent 以容器的形式跑在EC2 instance 上, 我们会给EC2 Instance赋予一个Role 以使CI agent有一定的权限完成特定的任务, 而这些权限分成两个部分:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;机器正常运行需要的一些权限, 比如LogGroup的权限等&lt;/li&gt;
+&lt;li&gt;跑job真正要用到的权限(由创建Agent的用户根据他们的目的定义)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在之前, 我们将这两部分权限揉到一个role里面, 而在我们以前的设计中, 我们允许用户提供这个role(通过直接指定定role arn. 这个role 包含上述两部分权限. 由于某些授权需要构建role与资源之间的信任关系, 而这个信任关系会在role 重建的过程中被破坏掉, 在这种情况下应该尽量避免相关role的重建. 所以我们提供一种选择让用户提供一个完整的role来避免role 随着agent stack的重建而重建), 用户提供的role中就必须加上我们instance运行所必须的权限, 这就会导致如果agent更新时需要新的权限, 而用户又没有及时加上必要的权限, 就会导致agent 所在的instances起不起来.&lt;/p&gt;
+&lt;p&gt;我们就想用类似ECS 的那种两层role 架构来解决这个问题: execution role 和task role, Execution role 拥有容器平台需要的权限, 而task role包含容器真正会用到的权限. 这样, 用户提供的就仅仅是一个task role, 而我们自己控制execution role, 而这样也比较符合least privilege 原则.&lt;/p&gt;
+&lt;h2 id=&#34;为什么在container里面assume-role不是一个好的实现&#34;&gt;为什么在container里面assume role不是一个好的实现&lt;/h2&gt;
+&lt;p&gt;现在我们可以解释一下为什么在container 里面assume role 不是一个好的实现: 在container 里面Assume role 这种实现本质就是将我们assume 到的role的credentials 放到环境变量中, 依赖AWS 官方工具读取credential 的优先级, 它会先读取环境变量中credential. 正常情况下, 我们只要将assume role 拿到的credential放在环境变量中就能被读取到.
+但是我们的agent采用docker in docker 的机制, 在container 里面跑的job 也是可以跑docker 的. 如果用户在跑job的时候没有明确的将相对应的环境变量映射到job 的container 里面去的话, 它将拿不到环境变量中的credentials, 最终他会去metadata service上去取当前机器的credential, 这样, 它就拿到了一个错误的权限.&lt;/p&gt;
+&lt;h2 id=&#34;那如何做更好呢&#34;&gt;那如何做更好呢?&lt;/h2&gt;
+&lt;p&gt;既然最后一步都是尝试访问metadata service 去拿credentials, 那我们能不能拦截这个请求呢?
+基于这个思路, 我们产出一个方案: 自己在instance上起一个假的metadata service. 将所有container中出来的、意图访问metadata server的流量全都导入假的metadata service中.
+假metadata service 的职责就是响应该请求, 并将一个通过assume role 拿到的credential 给返回回去.
+这样就让container 里面的credentials 获取路径就统一了, 不管容器套容器套了多少层, 最后拿role的credentials的时候都会走到我们假的metadata service上.&lt;/p&gt;
+&lt;h2 id=&#34;工具&#34;&gt;工具&lt;/h2&gt;
+&lt;p&gt;思路有了, 那我们怎么来达成这个目的呢? 流量的劫持转发我们可以用iptables, 现在就差一个fake metadata service 的实现了, 难道要自己写吗? 本着不重复造轮子的精神, 上GitHub!! 还真功夫不负有心人, 找到一个不错的&lt;a href=&#34;https://github.com/lyft/metadataproxy&#34;target=&#34;_blank&#34; rel=&#34;noopener noreferrer&#34;&gt;实现&lt;/a&gt;
+.&lt;/p&gt;
+&lt;h2 id=&#34;实现&#34;&gt;实现&lt;/h2&gt;
+&lt;p&gt;有了工具, 那就开始动手吧!!
+首先启动fake metadata service, 我们采用docker container的方式来跑这个服务, 在用它提供的库打好docker 镜像, 在EC2 机器上通过下述命令启动fake metadata service.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;docker run -d -e &lt;span class=&#34;nv&#34;&gt;MOCK_API&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;true&lt;/span&gt; --net&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;host -v /var/run/docker.sock:/var/run/docker.sock &amp;lt;image that you just build&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;注意: 这里的network 要设置成host, 我们待会在解释为什么.&lt;/p&gt;
+&lt;p&gt;fake metadata service 有了, 那就要将容器的相关请求劫持下来导入到fake metadata service 上了:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;nv&#34;&gt;LOCAL_IPV4&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;curl http://169.254.169.254/latest/meta-data/local-ipv4&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;
+
+/sbin/iptables &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt; --append PREROUTING &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt; --destination 169.254.169.254 &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt; --protocol tcp &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt; --dport &lt;span class=&#34;m&#34;&gt;80&lt;/span&gt; &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt; --in-interface docker0 &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt; --jump DNAT &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt; --table nat &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt; --to-destination &lt;span class=&#34;nv&#34;&gt;$LOCAL_IPV4&lt;/span&gt;:8000 &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt; --wait
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;上述命令就是将从docker0 虚拟网口出来的、欲意访问169.254.169.254:80 的tcp请求导入到本机的8080 端口上. 这里就可以理解为什么上述服务要起在host networking模式了, 因为我们要把所有通过docker0出来的访问请求都导入到fake metadata service 上, 如果我们的假的metadata service也在桥接模式下, 那我们去assume role时要拿的那个execution role credentials的请求也会被导入到假的server 上&amp;hellip; bang!! 我们的metadata service 就不能拿到Execution role的权限了, 也就没办法去assume 到task role啦.&lt;/p&gt;
+&lt;p&gt;在做完这一步以后, 我们就只需要在运行容器的时候, 将你欲意使用的task role的arn 设置成环境变量传给容器(对我们来说这是非常好控制的, 因为CI agent container就是通过我们的编排跑起来的).&lt;/p&gt;
+&lt;p&gt;到此为止, 这台机器就能很好的实现task role和execution role的区分了, 当然了, execution role 要有权限去assume task role, 这种基础细节就不一一介绍了.&lt;/p&gt;
+&lt;p&gt;整体实现下来结构大致如下图所示:
+&lt;img  src=&#34;/images/second-tier-role-on-ec2/1.jpeg&#34;
+        alt/&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>一个AWS资源访问请求的历程(二) </title>
+      <link>/posts/aws-authentication-and-authorization-overview-2/</link>
+      <pubDate>Sun, 09 Feb 2020 13:24:11 +0800</pubDate>
+      
+      <guid>/posts/aws-authentication-and-authorization-overview-2/</guid>
+      <description>&lt;p&gt;书接前文, 前面已经介绍到AWS 在授权(Authorization)阶段先拿到了请求相对应的上下文信息, 在拿到上下文信息以后就能开始做权限的评估(policy evaluation)了.&lt;/p&gt;
+&lt;p&gt;接触过IAM 的同学可能听过类似的一些IAM 授权策略的规则(如果有些名词你不太理解, 没关系, 我们后面会一个一个解释):&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;默认情况下, 所有的请求都是被拒绝的(account root 发出来的请求除外).&lt;/li&gt;
+&lt;li&gt;在任意授权策略(基于身份的授权/基于资源的授权)中显示声明的允许将会覆盖上述默认情况.&lt;/li&gt;
+&lt;li&gt;如果Organization SCP、IAM permission boundary、session policy 之一(或者都)存在的话, 它们都必须要允许该请求, 不然的话, 会被看作隐式的拒绝.&lt;/li&gt;
+&lt;li&gt;一个显式的拒绝可以覆盖任何其他条件.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;但是大家有没有想过, 到底是什么样的一个评估逻辑支撑了上面这些规则?
+在解释评估逻辑之前, 我们需要先来了解一下IAM 都支持哪些种授权策略(policy), 以及它们的作用方式与范围.&lt;/p&gt;
+&lt;h2 id=&#34;授权策略policy解析&#34;&gt;授权策略(policy)解析&lt;/h2&gt;
+&lt;p&gt;首先, AWS 通过Policy 来定义权限,  Policy 是AWS授权的基础, policy 是类似于下面的代码的一个定义语句:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;{ 
+    &amp;quot;Version&amp;quot;: &amp;quot;2012-10-17”,
+    &amp;quot;Statement&amp;quot;: [
+        {
+            &amp;quot;Sid&amp;quot;: &amp;quot;AllowS3ListRead”,
+            &amp;quot;Effect&amp;quot;: &amp;quot;Allow”,
+            &amp;quot;Action&amp;quot;: [ &amp;quot;s3:ListAllMyBuckets&amp;quot;, &amp;quot;s3:HeadBucket&amp;quot; ],
+            &amp;quot;Resource&amp;quot;: &amp;quot;*”
+        }
+    ]
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;上述policy 定义了一个允许在所有资源上进行s3:ListAllMyBuckets 和 s3:HeadBucket 的权限.
+其次, 根据Policy 应用的地方不一样, 也就区分了不同类型的policy, 接下来我们一一介绍:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Identity-based policy(基于身份的授权策略)&lt;/strong&gt;
+Identity-based policy 是应用在IAM 身份实体(User、一组User、Role)上的一种policy, 它将它自身所带的权限赋予该身份. 如果一个请求只有Identity-based policy 起作用, 那么就只需要Identity-based policy 中有至少一个相对应的“允许”就可以授权通过了.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Resource-based policy(基于资源的授权策略)&lt;/strong&gt;
+Resource-based policy 是应用在一个资源上的policy, 它给policy 定义的特定角色授予(禁止)访问该资源的权限.如果一个请求中同时有Identity-based policy 和Resource-based policy 起作用, 那么只需要两个policy 中至少有一个“允许”就可以通过授权了.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;IAM permission boundary(权限边界)&lt;/strong&gt;
+权限边界是一种应用在IAM 身份实体(User、一组User、Role)上的特定的Policy, 它定义了该IAM 身份实体最大能通过Identity-based policy取得的权限范围, 如果你将权限边界应用在了一个身份实体上, 那么它的权限将是Identity-based Policy 和 Permission boundary 的交集. 注意: Permission boundary 针对在Resource-based Policy 中定义的权限没有作用. 它定义了Identity-based policy 所能授与权限的天花板.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;AWS Organizations service control policies (SCPs)&lt;/strong&gt;
+组织(包含多个AWS Account)级别的Permission boundary, 它定义的是组织里面的Account 下所有授权所能取得的最大权限. 也就是说, 只要组织SCPs存在, 没有任何授权能超出它定义的范围. 它定义了一个Org 以及其下的Account 所有身份所能获取的最大权限.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Session policies&lt;/strong&gt;
+Session policy 是一种特殊的policy, 它被附加在一次assume role 的会话(session)中. 不管通过什么方式来assume 到一个role, 我们称这个assume role以后的交互为一个会话(session), 而你可以将一系列policy 附加到某次会话中, 这就意味着, 你为当前会话的主角(Principal) 设置了一个权限边界, 它的作用范围于Permission boundary是一模一样的(只作用于Identity based policy 而不会影响到Resource based policy).&lt;/p&gt;
+&lt;p&gt;回到我们的请求中(我们还没有忘记我们的API请求), 在一次请求的授权中, 这些policy 是可以随意组合的(只要它们被设置了), 它们可以同时出现, 也可以只出现一个或者多个.
+依据这些policy的特性, 我们来看一下, 这些policy 的几种常见组合的授权边界是什么样子的:&lt;/p&gt;
+&lt;p&gt;在解释授权边界之前, 我们还是要牢记: 显式声明的Deny 将覆盖任何的Allow.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Identity-Based Policy + Resource-Based Policy&lt;/strong&gt;
+Identity-Based Policy 附在一个特定的User 或者Role上, 给该User/Role 赋予/拒绝它所指定的权限, Resource-Based Policy 附着在Resource上, 给特定的Principal(User和Role 只是Principal的一个子集, 这个我们后面再聊) 赋予/拒绝访问该资源的权限, 如果Identity-Based Policy 和Resource-Based Policy 同时被使用的话, 只要它们其中一个授权了该请求, 那么请求就被授权了.也就是说, 如果两者同时被使用的话, 那么请求的权限边界将是两个Policy 权限的并集.
+&lt;img  src=&#34;/images/AWS-authentication-and-authorization-overview-2/1.png&#34;
+        alt/&gt;
+&lt;strong&gt;Identity-Based Policy + IAM Permission Boundary&lt;/strong&gt;
+IAM Permission Boundary 是给User/Role 设置的权限边界, 所以, 如果Identity-Based Policy和Permission Boundary 同时出现的话, 该请求的权限边界将是两个policy 的交集.
+&lt;img  src=&#34;/images/AWS-authentication-and-authorization-overview-2/2.png&#34;
+        alt/&gt;
+&lt;strong&gt;Resource-Based Policy + IAM Permission Boundary&lt;/strong&gt;
+上文提到了, IAM Permission Boundary 不作用于Resource-Based Policy, 所以, 这两者的组合的权限边界完全等于Resource-based Policy 的权限.
+&lt;img  src=&#34;/images/AWS-authentication-and-authorization-overview-2/3.jpeg&#34;
+        alt/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Organization SCPs + Identity-based/Resource-based policy&lt;/strong&gt;
+上文提到Org SCPs 是在Org 及其Account级别的授权边界, 所以, 所有权限都不能超过它授权的边界. 所以有效权限是它们的交集.
+&lt;img  src=&#34;/images/AWS-authentication-and-authorization-overview-2/4.jpeg&#34;
+        alt/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Organization SCPs + Identity-Based Policy + IAM Permission Boundary&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Permission Boundary 和Organization 都对边界做了限制, 所以有效权限是三个policy的交集.
+好了, 在有了这么多关于Policy的知识以后, 我们就可以来看看AWS 底层是一个什么评估逻辑来支撑了以上关于Policy的规则.
+&lt;img  src=&#34;/images/AWS-authentication-and-authorization-overview-2/5.jpeg&#34;
+        alt/&gt;&lt;/p&gt;
+&lt;h2 id=&#34;policy的评估逻辑&#34;&gt;Policy的评估逻辑&lt;/h2&gt;
+&lt;p&gt;总的来说, 我们的请求在这个阶段会经历4个阶段评估:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;全局policy 的Deny 评估&lt;/li&gt;
+&lt;li&gt;组织/Account 授权边界的评估&lt;/li&gt;
+&lt;li&gt;基于资源的授权评估&lt;/li&gt;
+&lt;li&gt;基于用户的授权评估(包含下图中的最后三步)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这4个阶段可以拆分成6个步骤, 也就是说, AWS对policy的评估总共分为6个步骤, 分别对应于不同的policy的评估(除了第一步), 如下图所示, 我们接下来就一个一个步骤的看一遍.
+&lt;img  src=&#34;/images/AWS-authentication-and-authorization-overview-2/6.jpeg&#34;
+        alt/&gt;
+下面我们就拆开它们来看看:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;显示拒绝授权: 这一步是从所有应用到该请求的policies(从context 中、org设置中、session中能找到所有应用的policy) 中将显示声明的Deny语句先评估一遍, 看看是否有和本条请求的Action 和Resource 相匹配的, 如果有, 那么评估结果将直接返回为拒绝(Deny). 这也是为什么显式声明的Deny的优先级最高的原因.&lt;/li&gt;
+&lt;li&gt;Organizations SCPs的评估: 如果有Org SCPs存在的话, 那么第二步就会去判断SCPs 是否允许该请求的, 如果允许, 那么我们可以去评估接下来的policy, 否则将会返回评估结果为拒绝. 这也是为什么说Org SCPs 是所有情况下授权的最大边界的原因.&lt;/li&gt;
+&lt;li&gt;Resource-based policy的评估: 如果评估继续, 那么就进入到了Resource-Based Policy的评估. 在这个阶段中, 只要Resource-based policy 有授权了该请求, 那么评估结果就是允许, 否则将继续往下评估.
+Note: 这里有一个例外: 如果在Resource-Based policy中指定的pricipal 是某个特定的用户或者角色的ARN, 那么这条授权语句将被加到用户或者角色的Identity-Based policy中, 在这种情况下, session policy是可以限制住这样一条授权的.&lt;/li&gt;
+&lt;li&gt;基于用户的授权评估: IAM permission Boundaries的评估: 如果Resource-based policy没有允许这条请求, 那么评估继续, 进入Permission boundary的评估. 如果Permission Boundary存在的话, Permission Boundary 必须显式的允许, 否则评估结果将会返回拒绝. 也就不会进入后面的Identity-based policy的评估了, 这也是说Permission Boundary 是Identity-based policy的授权上界.&lt;/li&gt;
+&lt;li&gt;Session policies: 如果permission Boundary 不存在或者允许了该请求, 那么就进入到下一个阶段, session policy的评估. 如果session policy 不存在或者允许了该请求, 那评估将进入下一个阶段, 否则, 请求将被拒绝, 这也就是为什么session policy是另一层boundary 的原因.&lt;/li&gt;
+&lt;li&gt;Identity-Based policy: 最后, 进入Identity-based policy的评估, 由于这是评估的最后阶段, 如果这个部分还没有任何语句允许授权的话, 那么最终的结果将是拒绝, 反之就是允许授权.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;那么到这里, 我们的身份验证和授权阶段就已经走完了, 资源请求经历整个流程以后, 就能确定是否允许访问相关资源了.&lt;/p&gt;
+&lt;p&gt;需要注意的是, 这里描述的是在同一个Account 中的授权逻辑(或者请求已经进入到了目标Account中了), 如果是跨Account的请求, 请求在出自己所在的Account的时候, 还会有一次授权校验, 请求需要在自己的Account 通过了授权, 才能发出去. 这也是为什么跨Account 请求的授权需要两个Account 都显式的允许(不管是Identity-based 还是Resource-based)才可以正确授权的原因.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>一个AWS资源访问请求的历程(一) </title>
+      <link>/posts/aws-authentication-and-authorization-overview/</link>
+      <pubDate>Sun, 09 Feb 2020 13:15:54 +0800</pubDate>
+      
+      <guid>/posts/aws-authentication-and-authorization-overview/</guid>
+      <description>&lt;p&gt;从一个资源访问请求发起, 到请求真正访问到资源, 期间发生了非常多的事情, 就和“在浏览器地址栏中输入一个网站地址并敲击回车以后发生了什么?” 这样的问题类似, 我们可以就某个阶段无限的细化下去, 直到电信号如何在半导体中传导.&lt;/p&gt;
+&lt;p&gt;今天的文章当然不会笼而统之的将大部分事件过一遍(我也没有时间和精力真的把所有事件细节都弄明白), 今天的文章将会关注请求的身份验证与授权上.&lt;/p&gt;
+&lt;p&gt;在进入真正的主题之前, 我们需要先澄清一下两个概念: 身份验证(Authentication)和授权(Authorization):
+简单的说, 身份验证是确定你是谁(你是你妈的孩子), 授权是确定谁有什么权限(你妈的孩子有权利进入她的房子).&lt;/p&gt;
+&lt;p&gt;举个例子: “Admin 有权限访问账单信息”这是一个授权, 而确认一个对帐单信息发起的请求是来自Admin 就是身份验证该做的事.&lt;/p&gt;
+&lt;p&gt;一般来讲授权是基于身份验证的, 即使是匿名用户(anonymous user)也是身份验证的一个结果.&lt;/p&gt;
+&lt;p&gt;好了, 在区分好了身份验证与授权以后, 我们可以继续往下看看AWS中的身份验证与授权流程了.&lt;/p&gt;
+&lt;p&gt;接触过AWS的同学都知道AWS 通过IAM 服务来做身份验证和授权,今天我们就以一个API请求为例子, 来解读一下当一个API 请求进入到AWS 以后, 它是如何通过每一个步骤最后访问到特定的资源的.&lt;/p&gt;
+&lt;p&gt;这里为什么用一个API 请求来举例子呢? 因为在AWS中,不管你是通过CLI、SDK、还是AWS console去访问资源, 你做的都只是调用特定的API 而已, 所以用API来举例子可以说覆盖了几乎所有的情况.&lt;/p&gt;
+&lt;p&gt;如下图所示, 大体上来说, 在AWS中, 一个对资源的访问请求也只是经历了身份验证与授权两个阶段(只不过, 我们会深入到各个阶段的细节中), 最终才能访问到特定的资源, 如果身份验证和授权都通过的话.
+&lt;img  src=&#34;/images/AWS-authentication-and-authorization-overview/1.png&#34;
+        alt/&gt;&lt;/p&gt;
+&lt;h2 id=&#34;aws中的身份验证authentication&#34;&gt;AWS中的身份验证(Authentication)&lt;/h2&gt;
+&lt;p&gt;身份验证的目的是确认请求发起的IAM实体(IAM Entities)是谁, 在AWS 中IAM实体有User 和Role, 其中的Role可以被User、Services和联合验证的用户来担任(assume). 关于User、Role、Group 等话题, 我们可以后面再聊.&lt;/p&gt;
+&lt;p&gt;AWS提供了多种认证方式:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;用户在console 上通过账号密码登陆.&lt;/li&gt;
+&lt;li&gt;使用用户的access key来完成API 请求的认证.&lt;/li&gt;
+&lt;li&gt;使用角色(Role)的security token来完成API认证.&lt;/li&gt;
+&lt;li&gt;通过其他的身份提供者完成联合验证.&lt;/li&gt;
+&lt;li&gt;匿名用户&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;通过以上方式, 你就完成了认证.&lt;/p&gt;
+&lt;h2 id=&#34;aws中的授权authorization&#34;&gt;AWS中的授权(Authorization)&lt;/h2&gt;
+&lt;p&gt;完成了身份验证以后, AWS 就知道这个请求是谁发起的了, 在请求能访问到资源之前, 我们还需要经过Authorization 的过程来评估发起请求的实体到底有没有权限来访问特定的资源.&lt;/p&gt;
+&lt;p&gt;如果权限是“允许”, 那么请求就能到达特定的资源, 反之, 则不行.
+AWS 的授权过程分为两个步骤:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;获取请求的上下文.&lt;/li&gt;
+&lt;li&gt;授权评估.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;由于篇幅限制, 我们将在这一篇介绍到请求上下文, 授权评估的内容较多, 将另起一篇文章来介绍.
+&lt;img  src=&#34;/images/AWS-authentication-and-authorization-overview/2.png&#34;
+        alt/&gt;&lt;/p&gt;
+&lt;h3 id=&#34;获取请求上下文&#34;&gt;获取请求上下文&lt;/h3&gt;
+&lt;p&gt;在这个步骤中, AWS 会收集一些请求相关的信息, 来确定有哪些授权政策可以应用在当前请求中, 比如:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;欲对资源进行的操作(Actions/Operators)&lt;/li&gt;
+&lt;li&gt;欲访问的资源(Resource)&lt;/li&gt;
+&lt;li&gt;身份信息和身份自身所带的权限(Principal &amp;amp; associated identity based policy).&lt;/li&gt;
+&lt;li&gt;环境数据: IP地址, User agent, SSL 可用状态(SSL enabled status), 时间&lt;/li&gt;
+&lt;li&gt;欲访问的资源的相关数据: 资源的标签等信息&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;AWS 将用这些信息来做后续的授权评估.
+获取到请求的上下文信息以后, AWS就可以根据这些上下文信息来时做授权评估了, 授权评估的细节还请待下回分解.&lt;/p&gt;
+&lt;p&gt;在下一篇中, 我们将详细了解授权评估所用的策略有哪些种类, 它们评估顺序、评估逻辑以及优先级如何等.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Availability 与 Reliability 又有何异同?</title>
+      <link>/posts/availability-and-reliability/</link>
+      <pubDate>Sun, 09 Feb 2020 13:13:06 +0800</pubDate>
+      
+      <guid>/posts/availability-and-reliability/</guid>
+      <description>&lt;p&gt;上篇文章我们理清楚了Durability 和 Availability的含义, 但是我们也经常听说Reliability 这个词, 很多同学在Reliability 和Availability 之间又有点模模糊糊的, 粗一理解上去, Reliability 和 Availability 好像是一个意思啊? 那么接下来, 我们就来看看Availability 和 Reliability 有什么异同.&lt;/p&gt;
+&lt;p&gt;在上篇文章中, 我们知道了Availability 是指一个系统在一个时间段中, 有多长时间是可用的. 它的计算公式如下所示:&lt;/p&gt;
+&lt;p&gt;可用性 = (总运行时间 - 总宕机时间) / 总运行时间&lt;/p&gt;
+&lt;p&gt;我们可以想见, 在现实生活中, 仅仅是用可用性的指标去衡量一个IT 系统是远远不够的.&lt;/p&gt;
+&lt;p&gt;举个例子: 有一个系统每小时奔溃1ms, 那么这个系统的可用性是99.9999722%, 我们能说这个系统是靠谱的吗? 是可靠的吗? 当然是不能的!&lt;/p&gt;
+&lt;p&gt;这个时候我们就应该来看看可靠性(Reliability)的概念了.&lt;/p&gt;
+&lt;h2 id=&#34;reliability&#34;&gt;Reliability&lt;/h2&gt;
+&lt;p&gt;可靠性指的是系统在多变/不可预测的现实环境下能保持无故障持续运行的可能性. 这里的无故障和持续运行是理解的重点.&lt;/p&gt;
+&lt;p&gt;我们通常用平均故障间隔时间(Mean Time Between Failures)来衡量一个系统的可靠性:&lt;/p&gt;
+&lt;p&gt;MTBF = sum(故障发生的时间点 - 上次故障修护的时间点)/ 故障的总次数&lt;/p&gt;
+&lt;p&gt;回到上面的例子, 一个系统每小时宕机1ms, 那么这个系统的可用性是99.9999722%, 但是他的可靠性不高.&lt;/p&gt;
+&lt;p&gt;如果一个系统从来不崩溃, 但是每年要停机两周, 那它的可用性只有96% 但是他的可靠性却比上一个系统要高不少.&lt;/p&gt;
+&lt;p&gt;可用性(Availability) 主要衡量的是系统总宕机时间占总运行时间的比例,&lt;/p&gt;
+&lt;p&gt;而可靠性(Reliability)主要衡量的是系统宕机的频率.&lt;/p&gt;
+&lt;p&gt;想要提高可用性, 需要提高从故障中恢复的能力, 如果每次都能够尽可能快的从故障中恢复, 总的故障时间就不会太长,可用性也就相对应的高.&lt;/p&gt;
+&lt;p&gt;想要提高可靠性, 需要提高容错的能力, 尽可能的防止系统进入故障状态中, 系统能够更长久无故障的运行, 可靠性指标也相应升高.&lt;/p&gt;
+&lt;p&gt;如有理解偏差, 还望不吝斧正.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Durability 和 Availability</title>
+      <link>/posts/durability-and-availability/</link>
+      <pubDate>Sun, 09 Feb 2020 12:59:04 +0800</pubDate>
+      
+      <guid>/posts/durability-and-availability/</guid>
+      <description>&lt;p&gt;作为第一语言非英语的学习者, 在接触云相关的服务/概念的时候, 可能经常被一些概念搞的云里雾里, 比如Authentication/Authorization、governance/compliance/auditing、 Durability/Availability 等等.&lt;/p&gt;
+&lt;p&gt;如果能尽早的弄清楚这些概念, 我们也能更好的理解云服务和更好的利用相关数据来帮助我们演进我们的架构.&lt;/p&gt;
+&lt;p&gt;今天我们就来理清楚一下Durability、Availability的含义:&lt;/p&gt;
+&lt;h2 id=&#34;durability耐久度&#34;&gt;Durability(耐久度)&lt;/h2&gt;
+&lt;p&gt;Durability(耐久度)通常就是用来衡量数据丢失的可能性的.&lt;/p&gt;
+&lt;p&gt;举个例子来说, 如果你家里有一份非常重要的文件, 然后你复印了一份这个文件, 并将这个复印件存在了银行的保险柜里面, 那么你的这个行为就是增加了该文件的Durability(耐久度), 所有文件的附件同时被摧毁的可能性大大降低了(想象一下家里着火同时银行保险柜被炸掉的可能性).&lt;/p&gt;
+&lt;p&gt;让我们用AWS S3 作为具体的例子来给Durability 做一个定义. 在S3中, Durability(耐久度)定义的是一个数据(object)有多大的可能性在一年以后仍然能保持完整(不丢失). AWS 用百分比了衡量Durability, 100% 的Durability(耐久度)意味着这个数据(Object)不存在丢失的可能性, 90%的Durability(耐久度)意味着如果你存了一个文件, 然后这个文件就会有10%的可能性在一年以后丢失.&lt;/p&gt;
+&lt;p&gt;那AWS SLA中的” S3 标准存储类型的数据(object)拥有99.999999999%的durability(耐久度)“意味着什么呢?&lt;/p&gt;
+&lt;p&gt;它意味着如果你在AWS S3中存了1000亿个文件, 那么一年以后,你有可能会丢失掉一个文件.&lt;/p&gt;
+&lt;h2 id=&#34;availability可用性&#34;&gt;Availability(可用性)&lt;/h2&gt;
+&lt;p&gt;Availability(可用性)用来衡量一个服务可以被使用用的可能性.&lt;/p&gt;
+&lt;p&gt;举个例子就是, 你可能有自己喜欢的理发师, 而你只能在他们提供服务的时候去使用他们的服务, 而他们提供服务的时间段, 就是一个有限的Availability.&lt;/p&gt;
+&lt;p&gt;对你来说, 增加更多可选的理发师将提高你要使用的理发服务的Availability(可用性), 在临近的县城(多区域)增加更多可选的理发师将更大的增加理发服务的可用性, 因为你再需要担心小型陨石将你附近的理发店全部摧毁而没有办法获得理发服务了(区域灾难导致的服务不可用).&lt;/p&gt;
+&lt;p&gt;在AWS 中 Availability同样是用百分数来衡量的, SLA中提到的99.99% Availability的保证, 意味着该服务将在99.99%的时间里面是保证可以提供服务的.&lt;/p&gt;
+&lt;p&gt;了解了Durability 和 Availability, 你是不是还听到过Reliability? Accessibility?那他们又是什么意思? 又有什么区别呢?&lt;/p&gt;
+&lt;p&gt;请看下回分解.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>跨Account 授权S3访问的三种方式</title>
+      <link>/posts/three-way-to-access-s3-bucket-acrossing-accounts/</link>
+      <pubDate>Thu, 06 Feb 2020 23:11:18 +0800</pubDate>
+      
+      <guid>/posts/three-way-to-access-s3-bucket-acrossing-accounts/</guid>
+      <description>&lt;p&gt;在这篇文章中, 我们整理一下跨Account 授权S3 访问的三种方式. 他们分别是, Bucket policy, Cross Account role 和 S3 ACL.&lt;/p&gt;
+&lt;p&gt;前两种其实前面讲过的Resource based policy 和 Identity based policy, 也是跨Account授权访问其他种类resource可以用到的通用方法, 最后一种S3 ACL 是S3特殊的一种授权方式, 在前两种能够达成目的的情况下, AWS 推荐使用前两种方式, S3 ACL已经被AWS标记成了老旧的方式(legacy way), 但是, 如果你已经使用了ACL 并且它工作良好, 那你也没有必要花精力将它改到Bucket policy上来. 那么接下来我们就一起看一下这三种授权方式的异同吧.&lt;/p&gt;
+&lt;h2 id=&#34;s3-acls&#34;&gt;&lt;strong&gt;S3 ACLs&lt;/strong&gt;&lt;/h2&gt;
+&lt;h3 id=&#34;s3-acls-是什么&#34;&gt;&lt;strong&gt;S3 ACLs 是什么?&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;一个&lt;/strong&gt; S3 ACL 是一个附加在S3 Object 或者S3 Bucket上的一个子资源(sub-resource). 它定义了哪个AWS account 或者group 能够有权限访问这个Bucket/Object, 并且它还会定义权限类型(读、写 等等), 当我们创建一个Bucket 或者Object 的时候, AWS S3 会创建一个相对应的默认ACL, 这个默认的ACL赋予资源的所有者所有权限.&lt;/p&gt;
+&lt;h3 id=&#34;s3-acls-如何配置&#34;&gt;&lt;strong&gt;S3 ACLs 如何配置?&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;S3 ACLs 的配置如下图所示, 只需要提供Account Canonical ID(理解为它等同于Account ID)、配置相关权限的授权就可以了:
+&lt;img  src=&#34;/images/three-way-to-access-s3-bucket-acrossing-accounts/1.png&#34;
+        alt=&#34;ACLs configure console&#34;/&gt;&lt;/p&gt;
+&lt;h3 id=&#34;s3-acls-与其他两种方式有何异同&#34;&gt;&lt;strong&gt;S3 ACLs 与其他两种方式有何异同?&lt;/strong&gt;&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;作用域&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;根据它的特性, 它与其他两者最主要的区别是它既可以附着在Bucket 上, 也可以附着在Object上, 而通过Bucket policy 和Identity based policy 来限制Object的访问的话, 只能将需要限制的Objects 写到policy的Resource字段中, 而这些policy 最终还是附着在Bucket/Identity 上面的.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Object的访问权限.&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果我们通过S3ACL 授权其他的Account 来访问, 那么其他Account 的用户在该Bucket 里面创建的Object 的权限就只有Owner(默认情况下), 即使你是Bucket 的owner, 你依然没有任何权限访问别人创建的Object 除非创建者显示的赋予你(Bucket owner)权限.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;S3 ACLs总结:&lt;/strong&gt; S3 ACLs 可以应用在Bucket 上也可以应用在Object上来跨Account 授权, 使用ACLs 授权所创建的Object 将默认只属于创建者, 即使是Bucket owner 也没有权限访问. S3 ACLs 是一种legacy的授权方式. 其授权访问方式如下图所示:
+&lt;img  src=&#34;/images/three-way-to-access-s3-bucket-acrossing-accounts/3.png&#34;
+        alt=&#34;ACLs&#34;/&gt;&lt;/p&gt;
+&lt;h2 id=&#34;bucket-policy&#34;&gt;&lt;strong&gt;Bucket Policy&lt;/strong&gt;&lt;/h2&gt;
+&lt;p&gt;Bucket Policy 就是附着在Bucket上的Resource-based policy, 我们可以通过如下代码跨Account 授权:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;{
+    &amp;quot;Version&amp;quot;: &amp;quot;2012-10-17&amp;quot;,
+    &amp;quot;Statement&amp;quot;: [
+        {
+            &amp;quot;Sid&amp;quot;: &amp;quot;Allow xxxxx account&amp;quot;,
+            &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+            &amp;quot;Principal&amp;quot;: {&amp;quot;AWS&amp;quot;: &amp;quot;1111111111&amp;quot;},
+            &amp;quot;Action&amp;quot;: &amp;quot;s3:PutObject&amp;quot;,
+            &amp;quot;Resource&amp;quot;: &amp;quot;arn:aws:s3:::examplebucket/*&amp;quot;
+        }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Principal 中既可以写{&amp;ldquo;AWS&amp;rdquo;:&amp;ldquo;1111111111&amp;rdquo;}, 也可以写{&amp;ldquo;AWS&amp;rdquo;: &amp;ldquo;arn:aws:iam::1111111111:root&amp;rdquo;}, 这都是指代某个Account, 特别是后面这个写法, 很多人理解成某个Account的root 用户, 这种理解是不对的, 这代表着某个Account.&lt;/p&gt;
+&lt;p&gt;和ACLs 类似,  如果通过上述代码授权跨Account的访问, 那么(默认情况下)Object的权限将只属于Object的创建者, 即使Bucket Owner也没有权限去访问这种Object, 但是, 在使用ACL授权的情况, 这种状况似乎是无解的,出发创建者授权给Bucket owner, 但是, 在使用Bucket policy授权时, 我们作为Bucket owner是可以采取一定的措施来避免这种情况发生的:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;{
+  &amp;quot;Version&amp;quot;: &amp;quot;2012-10-17&amp;quot;,
+  &amp;quot;Statement&amp;quot;: [
+    {
+      &amp;quot;Sid&amp;quot;: &amp;quot;Allow xxxxx account&amp;quot;,
+      &amp;quot;Effect&amp;quot;: &amp;quot;Allow&amp;quot;,
+      &amp;quot;Principal&amp;quot;: {
+        &amp;quot;AWS&amp;quot;: &amp;quot;1111111111&amp;quot;
+      },
+      &amp;quot;Action&amp;quot;: &amp;quot;s3:PutObject&amp;quot;,
+      &amp;quot;Resource&amp;quot;: &amp;quot;arn:aws:s3:::examplebucket/*&amp;quot;
+    },
+    {
+      &amp;quot;Sid&amp;quot;: &amp;quot;Deny Object that not grant permission to bucket owner&amp;quot;,
+      &amp;quot;Effect&amp;quot;: &amp;quot;Deny&amp;quot;,
+      &amp;quot;Principal&amp;quot;: {
+        &amp;quot;AWS&amp;quot;: &amp;quot;1111111111&amp;quot;
+      },
+      &amp;quot;Action&amp;quot;: &amp;quot;s3:PutObject&amp;quot;,
+      &amp;quot;Resource&amp;quot;: &amp;quot;arn:aws:s3:::examplebucket/*&amp;quot;,
+      &amp;quot;Condition&amp;quot;: {
+        &amp;quot;StringNotEquals&amp;quot;: {
+          &amp;quot;s3:x-amz-acl&amp;quot;: &amp;quot;bucket-owner-full-control&amp;quot;
+        }
+      }
+    }
+  ]
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;我们可以设置一个拒绝授权的条件: 如果不给Bucket Owner 赋予full access 那么就拒绝这次请求.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;总结:&lt;/strong&gt;  和ACLs相比, Bucket policy 只能应用在Bucket上, 但是可以通过设置具体资源的方式来限制Object 的访问, 与使用ACLs授权相同, 使用bucket policy 授予其他Account权限, 默认情况下Object只属于创建者, 但是Bucket policy 可以设置“如果不赋予Bucket Owner 所有权的话, 就拒绝”的policy. 起授权访问图示如下图:
+&lt;img  src=&#34;/images/three-way-to-access-s3-bucket-acrossing-accounts/2.png&#34;
+        alt=&#34;Bucket Policy&#34;/&gt;{:height=&amp;quot;100px&amp;rdquo; width=&amp;quot;400px&amp;rdquo;}&lt;/p&gt;
+&lt;h2 id=&#34;cross-account-role&#34;&gt;&lt;strong&gt;Cross Account Role:&lt;/strong&gt;&lt;/h2&gt;
+&lt;p&gt;cross Account role 的方式就是在资源所在的Account中创建一个用来访问资源的role, 并且允许Account A中的Principal 来Assume, Account A中的principal 通过assume 到这个role上来获取访问S3 bucket 的权限. 这里对S3资源的授权本质就是Identity-based policy.&lt;/p&gt;
+&lt;p&gt;使用这种方式, Object的所有权还是在资源所在的Account 里面, 因为创建Object的是那个被Assume的role而已.
+其授权访问图示如下图:
+&lt;img  src=&#34;/images/three-way-to-access-s3-bucket-acrossing-accounts/4.png&#34;
+        alt=&#34;Cross Account Role&#34;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;最后, 至于以上三种方式何时何地使用完全取决与你自己的使用场景, 依据三种方式的特性具体情况具体分析.&lt;/strong&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

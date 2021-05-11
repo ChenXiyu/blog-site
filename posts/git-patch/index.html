@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>Git补丁&nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Git补丁" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">Git补丁</h1><p class="article date">Tuesday, November 10, 2015</p></section><article class="article markdown-body"><p>git除了使用push/pull来在不同仓库将传输变更外还提供了一种比较‘古老’的方式来传输变更，那就是补丁.补丁通过邮件发送，如果是公司内网，禁掉了git原生协议/ssh端口/http协议的话，我们没法push或者pull变更，那么现在将补丁通过邮件发送是一个不错的选择。git 实现了三条特定的命令来帮助交换补丁：</p>
+<ul>
+<li>git format-patch 用于生成email形式的补丁;</li>
+<li>git send-email 通过SMTP来发送一个git补丁;</li>
+<li>git am 应用邮件消息中的补丁;</li>
+</ul>
+<h2 id="生成补丁">生成补丁</h2>
+<p><strong>git format-patch</strong>会已邮件消息的形式生成补丁（每个提交都会生成一封邮件）。
+常用的用例包括：</p>
+<ul>
+<li>特定的提交次数: -1/-3/-6</li>
+<li>提交范围：master～4..master～2</li>
+<li>单次提交： origin/master</li>
+</ul>
+<p>git diff机制是生成补丁的核心，git format-patch生成的内容就是在git diff的内容上加上邮件头，提交信息和提交日志等来形成一封邮件。</p>
+<pre><code>$ mkdir /tmp/GitTest 
+$ cd $_
+$ git init
+$ echo A &gt;&gt; file 
+$ git add file
+$ git commit -m &quot;init commit&quot;
+$ echo B &gt;&gt; file ; git commit -am &quot;B commit&quot;
+$ echo c &gt;&gt; file ; git commit -am &quot;c commit&quot;
+$ echo d &gt;&gt; file ; git commit -am &quot;d commit&quot;
+</code></pre>
+<p>至此我已经创建了一系列的提交：</p>
+<pre><code>+-------+   +-------+   +-------+   +-------+
+|       |   |       |   |       |   |       |
+|   A   |---|   B   |---|   C   |---|   D   |
+|       |   |       |   |       |   |       |
++-------+   +-------+   +-------+   +-------+
+</code></pre>
+<p>为最近n次提交生成补丁，使用**-n**选项：</p>
+<pre><code>$ git format-patch -1
+0001-d-commit.patch
+$ git format-patch -2
+0001-c-commit.patch
+0002-d-commit.patch
+</code></pre>
+<p>其中各个patch对应的提交如下图所示:</p>
+<pre><code>+-------+   +-------+   +-------+   +-------+
+|       |   |       |   |       |   |       |
+|   A   |---|   B   |---|   C   |---|   D   |
+|       |   |       |   |       |   |       |
++-------+   +-------+   +-------+   +-------+
+                 \          /\          /
+                  \        /  \        /
+                   \      /    \      /
+                    \    /      \    / 
+                     \  /        \  / 
+                      \/          \/
+          0001-c-commit.patch   0002-d-commit.patch
+</code></pre>
+<p>使用<code>git format-patch master~2..master</code>效果同上。
+查看一下patch的内容：</p>
+<pre><code>$cat 0001-c-commit.patch
+From 6f0a3e7cfea16fd65e699aa7d67d6179f710ff07 Mon Sep 17 00:00:00 2001
+From: ChenXiyu &lt;xycinus@gmail.com&gt;
+Date: Tue, 10 Nov 2015 10:50:46 +0800
+Subject: [PATCH 1/2] c commit
+
+---
+ file | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/file b/file
+index 3042490..c2e990f 100644
+--- a/file
++++ b/file
+@@ -1,3 +1,4 @@
+ A
+ B
+ B
+ +c
+-- 
+2.4.3
+</code></pre>
+<p>可以看到前面一部分是邮件的头，后面一部分实际是一个diff。
+当我们遇到更加复杂分支时，补丁又将如何工作呢？比如我的版本库是这个样子：</p>
+<pre><code>+-------+   +-------+   +-------+   +-------+   +-------+   +-------+
+|       |   |       |   |       |   |       |   |       |   |       |
+|   A   |---|   B   |---|   C   |---|   D   |---|   e   |---|   F   |       master
+|       |   |       |   |       |   |       |   |       |   |       |
++-------+   +--+----+   +-------+   +-------+   +-+-----+   +-------+
+                \                                /
+                +-------+   +-------+   +-------+
+                |       |   |       |   |       |
+                |   X   |---|   Y   |---|   Z   |                         alt
+                |       |   |       |   |       |
+                +-------+   +-------+   +-------+
+</code></pre>
+<p>当你想要在提交F和提交D之间生成补丁的话：</p>
+<pre><code>$ git format-patch master~2..master
+0001-x-commit.patch
+0002-y-commit.patch
+0003-z-commit.patch
+0004-f-commit.patch
+</code></pre>
+<p>这也不难理解，要从提交D到提交F，必须将XYZ提交的所有变更应用到提交D上，而合并提交e是没有产生任何变更，所以合并提交是不生成补丁的，依次将提交XYZf的补丁打到提交D上，就能得到与提交F一模一样的内容。顺便提一下git中提交范围的计算方式：终点能回溯到达的提交减去起点能回溯到达的提交。比如上述的master～2..master这个提交范围，终点是master，终点能回溯到达的提交就是FEDCBAZYX，起点是master～2,起点能回溯到达的提交是DCBA，那么终点能回溯到达的提交减去起点能回溯到达的提交为FEZYX。
+在复杂分支的情况下，如果你不确定你接下来运行git format-patch 会对哪些提交生成补丁，那么你可以使用<code>git rev-list --no-merge -v since..until</code>来验证将要生成补丁的提交。</p>
+<h2 id="邮递补丁">邮递补丁</h2>
+<p>在生成了一系列补丁后，下一步就是通过邮件发送给另一个开发者或者发到邮件列表用于代码审查，你可以使用<strong>git send-email</strong>或者直接导入电子邮件用户代理（Mail User Agent）来发送邮件
+ps:要使用git send-email命令你可能需要额外安装git-email包</p>
+<pre><code>$git send-email -to xycinus@gmail.com 0001-c-commit.patch
+(mbox) Adding cc: ChenXiyu &lt;xycinus@gmail.com&gt; from line 'From: ChenXiyu &lt;xycinus@gmail.com&gt;'
+
+From: ChenXiyu &lt;xycinus@gmail.com&gt;
+To: xycinus@gmail.com
+Subject: [PATCH 1/3] B commit
+Date: Tue, 10 Nov 2015 12:51:42 +0800
+Message-Id: &lt;1447131102-25455-1-git-send-email-xycinus@gmail.com&gt;
+X-Mailer: git-send-email 2.4.3
+
+The Cc list above has been expanded by additional
+addresses found in the patch commit message. By default
+send-email prompts before sending whenever this occurs.
+This behavior is controlled by the sendemail.confirm
+configuration setting.
+
+For additional information, run 'git send-email --help'.
+To retain the current behavior, but squelch this message,
+run 'git config --global sendemail.confirm auto'.
+
+Send this email? ([y]es|[n]o|[q]uit|[a]ll): y
+OK. Log says:
+Sendmail: /usr/sbin/sendmail -i xycinus@gmail.com
+From: ChenXiyu &lt;xycinus@gmail.com&gt;
+To: xycinus@gmail.com
+Subject: [PATCH 1/3] B commit
+Date: Tue, 10 Nov 2015 12:51:42 +0800
+Message-Id: &lt;1447131102-25455-1-git-send-email-xycinus@gmail.com&gt;
+X-Mailer: git-send-email 2.4.3
+
+Result: OK
+</code></pre>
+<p>然后出现下面的错误，邮件没有发出去</p>
+<pre><code>No configuration file found at /home/cxy/.esmtprc or /etc/esmtprc
+</code></pre>
+<p>应该是邮件服务器问题，我还没有折腾过邮件服务，先这样把，知道这样能够发送补丁到邮件列表或者邮箱。</p>
+<h2 id="应用补丁">应用补丁</h2>
+<p>Git有两条基本命令来应用补丁，分别是git am 和 git apply，其中git am 较git apply更加高级，git apply 相当于diff-patch命令中的patch，用于将补丁打到特定文件中，也就是git apply负责根据补丁对文件进行修改，而git am将根据邮件的头（form，date，subject等）内容来构造提交，所以在应用补丁时git apply是个主力，但是你并不需要手动运行它。
+如果补丁中包含多个分支，就像上面的情况一样，注意使用三路合并(-3)的方式解决冲突，不然，应用补丁将不会成功。</p>
+<pre><code>$ git am -3 /path/to/patch/*.patch
+</code></pre>
+<p>如果需要手动解决冲突，那么停下来等待你手动解决冲突。冲突解决后使用</p>
+<pre><code>$ git am -3 --resolved
+</code></pre>
+<p>继续打补丁。直到成功。如果想终止打补丁的操作，那么可以使用</p>
+<pre><code>$ git am --abort
+</code></pre>
+<p>来终止打补丁的操作。你也可以使用在当个补丁失败时选择跳过某个补丁</p>
+<pre><code>$ git am --skip
+</code></pre>
+</article><section class="article labels"><a class="tag" href=/tags/git/>git</a></section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/theartofcommunicate/"><span class="iconfont icon-article"></span>沟通的艺术课后感</a></p><p><a class="link" href="/posts/practical_vim_2/"><span class="iconfont icon-article"></span>«Practical Vim» 2</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>

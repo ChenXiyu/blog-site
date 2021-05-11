@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en"><meta charset="utf-8"><meta name="generator" content="Hugo 0.69.0" /><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark"><title>Git:更改你的提交&nbsp;&ndash;&nbsp;94xychen&#39;s Blog</title><link rel="stylesheet" href="/css/core.min.46d2a3ccad11dffb6ac83d03ce2866718e13da7e9aef15850af525740c1815eab3eebde42e89da64c83b798a4b37f0f5.css" integrity="sha384-RtKjzK0R3/tqyD0DzihmcY4T2n6a7xWFCvUldAwYFeqz7r3kLonaZMg7eYpLN/D1"><meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Git:更改你的提交" /><body><section id="header">
+    <div class="header wrap"><span class="header left-side"><a class="site home" href="/"><img class="site logo" src="/images/logo.png" alt /><span class="site name">94xychen's Blog</span></a></span>
+        <span class="header right-side"><div class="nav wrap"><nav class="nav"><a class="nav item" href="https://github.com/chenxiyu"target="_blank"><i class="fab fa-github"></i></a></nav></div></span></div><div class="site slogan"><span class="title">Digging Deeper</span></div></section><section id="content"><div class="article-container"><section class="article header">
+    <h1 class="article title">Git:更改你的提交</h1><p class="article date">Saturday, August 15, 2015</p></section><article class="article markdown-body"><p>只要没有人有该版本库中的某个部分的副本，那么你就可以修改该部分的提交,如果一个分支公开了，可能存在于其他版本库中，那么你就不应该重写或修改该分支的任何已公开部分。</p>
+<h2 id="git-reset">git reset</h2>
+<p>该命令会将版本库和工作目录改变为已知状态。git reset 调整HEAD引用指向给定的提交，默认情况下还会更新索引以匹配该提交。<strong>破坏性强</strong>。
+git reset 有三个主要的选项：--soft,--mixed,--hard</p>
+<ul>
+<li>--sort
+将HEAD引用指向给定的提交，索引和工作目录的内容保持不变。</li>
+<li>--mixed(默认选项)
+将HEAD引用指向给定的提交，索引内容也跟着改变以适应新的提交，工作目录的内容不改变。</li>
+<li>--hard
+HEAD指向给定提交，索引内容也改变以符合新HEAD，工作目录改变为索引，前面为提交的工作将全部丢弃。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">选项</th>
+<th align="center">HEAD</th>
+<th align="center">索引</th>
+<th align="center">工作目录</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">--soft</td>
+<td align="center">T</td>
+<td align="center">F</td>
+<td align="center">F</td>
+</tr>
+<tr>
+<td align="center">--mixed</td>
+<td align="center">T</td>
+<td align="center">T</td>
+<td align="center">F</td>
+</tr>
+<tr>
+<td align="center">--hard</td>
+<td align="center">T</td>
+<td align="center">T</td>
+<td align="center">T</td>
+</tr>
+<tr>
+<td align="center">git reset 将把原始的HEAD值放到<code>ORIG_HEAD</code>中</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="常见用法">常见用法</h3>
+<ul>
+<li>恢复索引
+根据git reset 默认选项为&ndash;mixed可以想到一个应用场景：你将某个文件修改了，并且使用git add将其加入到索中了，但是现在你想将索引恢复到原来的状态，这时你就可以使用<code>git reset HEAD [FILENAME]</code>来使索引恢复到原来的样子了。</li>
+<li>重做或清除分支上的最近提交
+在你的git仓库中，如果你觉得你最近的提交是不漂亮的，想重新规划该提交，这时你就可以使用git reset命令来是HEAD切换到master^上去，然后修改为你觉得漂亮的一个版本，然后再提交。使用git reset的时候可以根据需要选择前面介绍的三个选项。(尽量不要这么做，因为后面将介绍的git commit &ndash;amend设计来专门做这个)当然，如果你想抛弃很多个提交来在某个历史节点上来构建新的历史git reset是可以做到的。</li>
+</ul>
+<p><strong>注意</strong>:千万不要使用git reset在不同分支间来修改HEAD，git reset将不会切换分支，这样新的提交很大可能不是你想要的，尽量避免，改变分支应该使用git checkout。</p>
+<h2 id="git-cherry-pick">git cherry-pick</h2>
+<p>在当前分支上应用给定提交引入的变更(pick某个历史记录中的提交，将其引入的变更patch到当前分支的HEAD上),可见命名也是非常形象的！</p>
+<h3 id="常见用法-1">常见用法</h3>
+<ul>
+<li>把版本库中一个分支的特定提交引入到一个不同的分支中
+etc:在dev分支中修复了一个bug并提交了F，在release分支中也有这个bug，但是现在dev分支的HEAD在H上，合并可能引入G和H未成熟的代码，所以使用git cherry-pick来将F提交直接应用到release分支上就可以了。</li>
+<li>重建一系列提交，通过一个分支选定一部分提交，然后把他们按不同序列引入新分支
+主要用于需要打乱提交序列的引入。其参数允许为提交的范围，如:x..z</li>
+</ul>
+<h2 id="git-revert">git revert</h2>
+<p>与git cherry-pick大致相同，但是它是应用给定提交的你过程。它会引入一个新的提交来抵消给定提交的影响。git revert不修改历史记录，相反的是它向历史记录中添加一个新的提交,该命令是用于整个提交。</p>
+<h3 id="常见用途">常见用途</h3>
+<ul>
+<li>撤销可能深埋在历史记录中的某个提交的影响。
+比如要撤销master的操作，可以使用<code>git revert master</code>这样在master分支上会新建一个提交，该提交应该是和执行命令的master~1是一样的。</li>
+</ul>
+<h2 id="git-commit---amend">git commit &ndash;amend</h2>
+<p>用于修改当前分支最近一次提交。使用这条命令意味着提交内容基本相同，但是需要某些方面的调整或者清理。该命令还可以编辑提交的元信息，比如联系人，邮箱地址等。</p>
+<h3 id="常见用途-1">常见用途</h3>
+<ul>
+<li>在刚刚作出提交后，修改录入提交的错误。</li>
+</ul>
+<h2 id="git-rebase">git rebase</h2>
+<p>用来改变一串提交以什么为基础,git rebase可以将分支在其他分支上向前/后移植(嫁接)</p>
+<h3 id="常见用途-2">常见用途</h3>
+<ul>
+<li>保持你正在开发的一系列提交相对于另一个分支是最新的
+那通常是master或者另一个版本库的追踪分支</li>
+<li>配合&ndash;onto选项，把一条分支上的开发线整个一直到完全不同的分支上。</li>
+</ul>
+<p>变基操作一次只迁移一个提交，从各自原始提交位置迁移到新的提交基础，每一个移动都可能有冲突需要解决。如果发现冲突，rebase操作会临时挂起进程以便手动解决冲突，一旦冲突解决完毕，索引都更新了以后，使用<code>git rebase --continue</code>命令恢复变基操作。如果你觉得该提交没有价值可以使用<code>git rebase --skip</code>来跳过这个提交。如果你认为不应该进行变基操作，可以使用<code>git rebase --abort</code>来中止操作，并把版本库恢复到变基之前的状态。</p>
+<h3 id="git-rebase--i">git rebase -i</h3>
+<p><code>-i --interasctive</code>,该命令允许你对历史提交进行重新排序，编辑，删除，合并多个提交或把一个提交分离为多个提交。
+<code>$ git rebase -i master~3</code><br>
+你将到编辑器里面编辑一个文件：</p>
+<pre><code> pick 68d8d3e second commit
+ pick 5844135 third commit
+
+ ## Rebase 69b916d..5844135 onto 69b916d (2 command(s))
+ ##
+ ## Commands:
+ ## p, pick = use commit
+ ## r, reword = use commit, but edit the commit message
+ ## e, edit = use commit, but stop for amending
+ ## s, squash = use commit, but meld into previous commit
+ ## f, fixup = like &quot;squash&quot;, but discard this commit's log message
+ ## x, exec = run command (the rest of the line) using shell
+ ##
+ ## These lines can be re-ordered; they are executed from top to bottom.
+ ##
+ ## If you remove a line here THAT COMMIT WILL BE LOST.
+ ##
+ ## However, if you remove everything, the rebase will be aborted.
+ ##
+ ## Note that empty commits are commented out
+</code></pre><p>前两行列出你在命令行里面指定的可编辑的提交范围内的提交，提交最初是按照从老到新的顺序排列的，每个提交都有一个动词<code>pick</code>,如果你离开编辑器，这些提交将被按照顺序被pick，应用到目标分支上，然后提交。根据文件中的提示，pick可以改为reword，edit，squash，fixup，exec或者直接删掉该行.</p>
+</article><section class="article labels"><a class="tag" href=/tags/git/>git</a></section>
+</div>
+<div class="article bottom"><section class="article navigation"><p><a class="link" href="/posts/github-2fa/"><span class="iconfont icon-article"></span>github两步认证丢失后处理方法</a></p><p><a class="link" href="/posts/shellscripts-math/"><span class="iconfont icon-article"></span>ShellScripts--数学计算</a></p></section><section class="article discussion"><div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "chenxiyu" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a></section></div></section><section id="footer"><div class="footer-wrap">
+    <p class="copyright">©2019 94xychen.</p>
+    <p class="powerby"><span>Powered&nbsp;by&nbsp;</span><a href="https://gohugo.io" 
+        target="_blank" rel="noopener noreferrer">Hugo</a><span>&nbsp;&amp;&nbsp;</span><a href="https://themes.gohugo.io/hugo-notepadium/" 
+        target="_blank" rel="noopener noreferrer">Notepadium</a></p></div>
+</section>
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-158590129-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script src="https://kit.fontawesome.com/47f47be57a.js" crossorigin="anonymous"></script>
+</body>
+
+</html>
